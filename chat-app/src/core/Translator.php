@@ -19,7 +19,6 @@ class Translator {
      * @param string $lang Code de langue par défaut
      */
     public function __construct($lang = 'fr') {
-        session_start();
         $this->lang = $_SESSION['lang'] ?? $lang;
         $this->loadTranslations();
     }

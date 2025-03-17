@@ -31,7 +31,7 @@ class NavigationController {
         // Configuration de base de la navigation
         return [
             'appName' => $this->translator->translate('app_name'),
-            'homeUrl' => '/',
+            'homeUrl' => 'index.php',
             'menuItems' => [
                 // Items du menu principal
                 [
@@ -41,8 +41,8 @@ class NavigationController {
                 ],
                 [
                     'label' => $this->translator->translate('profile'),
-                    'url' => '/profile',
-                    'active' => false
+                    'url' => 'profile.php',
+                    'active' => false 
                 ],
                 [
                     'label' => $this->translator->translate('settings'),
