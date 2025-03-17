@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS messages (
     content TEXT NOT NULL COMMENT 'Message content',
     message_type ENUM('text', 'image', 'file', 'voice') DEFAULT 'text' COMMENT 'Type of message',
     file_url VARCHAR(255) COMMENT 'URL for attached file if any',
-    is_edited BOOLEAN DEFAULT FALSE COMMENT 'Whether message has been edited',
+    is_edited BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Whether message has been edited',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Message sent time',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last edit time',
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,

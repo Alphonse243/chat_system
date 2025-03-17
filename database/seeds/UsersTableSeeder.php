@@ -8,15 +8,22 @@
  * 
  * Configuration admin par défaut :
  * - Username: admin
+ * - Name: Administrator
  * - Email: admin@example.com
  * - Password: password123
- * - Status: active
+ * - Status: online
+ * - Avatar: null
+ * - Bio: System Administrator
+ * - Is Active: true
  * 
  * Données générées avec Faker :
  * - Usernames uniques
+ * - Noms aléatoires
  * - Emails valides
- * - Statuts aléatoires (active/inactive)
- * - Dates de création sur le dernier mois
+ * - Statuts aléatoires (online/offline/away/busy)
+ * - Avatars aléatoires (30% de chance d'avoir un avatar)
+ * - Bios aléatoires
+ * - Is Active: true
  */
 class UsersTableSeeder {
     private $db;
@@ -28,25 +35,34 @@ class UsersTableSeeder {
     }
 
     public function run() {
+        $stmt = $this->db->prepare("
+            INSERT INTO users (username, name, email, password, avatar_url, bio, status, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
         // Admin user
-        $stmt = $this->db->prepare("INSERT INTO users (username, email, password, status, created_at) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([
             'admin',
-            'admin@example.com',
-            password_hash('password123', PASSWORD_DEFAULT),
-            'active',
-            date('Y-m-d H:i:s')
+            'Administrator',
+            'admin@gmail.com',
+            password_hash('admin', PASSWORD_DEFAULT),
+            null,
+            'System Administrator',
+            'online',
+            true
         ]);
 
         // Generate 10 random users
-        for ($i = 0; $i < 10; $i++) {
-            $username = $this->faker->userName;
+        for ($i = 0; $i < 50; $i++) {
             $stmt->execute([
-                $username,
+                $this->faker->userName,
+                $this->faker->name,
                 $this->faker->email,
                 password_hash('password123', PASSWORD_DEFAULT),
-                $this->faker->randomElement(['active', 'inactive']),
-                $this->faker->dateTimeBetween('-1 month')->format('Y-m-d H:i:s')
+                $this->faker->boolean(30) ? 'avatar_' . $i . '.jpg' : null,
+                $this->faker->text(200),
+                $this->faker->randomElement(['online', 'offline', 'away', 'busy']),
+                true
             ]);
         }
     }
