@@ -1,63 +1,67 @@
-# Système de Seeding pour Chat System
+# Documentation des Seeders
 
-## Structure de la Base de Données
+## Configuration
 
-### Table Users
-```sql
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### 1. Connexion Base de données
+```php
+// Database.php
+const DB_HOST = 'localhost';
+const DB_USER = 'root';
+const DB_PASS = '';
+const DB_NAME = 'chat_system';
 ```
 
-### Table Messages
-```sql
-CREATE TABLE messages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    content TEXT,
-    type ENUM('text', 'image', 'file') DEFAULT 'text',
-    status ENUM('sent', 'delivered', 'read') DEFAULT 'sent',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
+### 2. Paramètres des Seeders
 
-## Utilisation du Seeding
+#### UsersTableSeeder
+- ADMIN_EMAIL: admin@gmail.com
+- ADMIN_PASSWORD: admin
+- USERS_COUNT: 50
 
-1. Assurez-vous que Composer est installé et que Faker est disponible :
+#### ConversationsTableSeeder
+- PRIVATE_CONVERSATIONS: 5
+- GROUP_CONVERSATIONS: 3
+
+#### MessagesTableSeeder
+- MIN_MESSAGES: 5
+- MAX_MESSAGES: 15
+- MESSAGE_TYPES: ['text', 'image', 'file', 'voice']
+
+## Exécution
+
+1. Composer install
 ```bash
-composer require fakerphp/faker
+composer install
 ```
 
-2. Exécutez le seeding :
+2. Initialisation base de données
+```bash
+php database/Database.php
+```
+
+3. Exécution des seeders
 ```bash
 php database/seeds/DatabaseSeeder.php
 ```
 
-## Contenu du Seeding
+## Structure des données générées
 
-### Users Seeder
-- Crée un utilisateur admin par défaut
-  - Username: admin
-  - Email: admin@example.com
-  - Password: password123
-- Génère 10 utilisateurs aléatoires avec Faker
+### Utilisateurs
+- Admin prédéfini
+- Utilisateurs avec données aléatoires
+- Statuts variés (online, offline, away, busy)
+- Avatars aléatoires (30% de chance)
 
-### Messages Seeder
-- Génère 3-8 messages par utilisateur actif
-- Types de messages : text, image, file
-- Statuts possibles : sent, delivered, read
-- Dates générées sur le dernier mois
+### Conversations
+- Privées: 2 participants
+- Groupes: 3-6 participants, 1 admin
+- Messages variés avec timestamps
 
-## Configuration
+### Messages
+- Contenu généré par Faker
+- Types variés avec fichiers
+- Statuts de lecture aléatoires
+- Horodatage sur le dernier mois
 
-La configuration de la base de données se trouve dans `Database.php` :
-- Host: localhost
-- Database: chat_system
-- User: root
-- Password: (empty)
+## Extensions
+Voir la documentation API complète pour plus de détails sur la personnalisation des seeders.

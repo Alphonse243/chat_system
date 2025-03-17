@@ -163,3 +163,64 @@ try {
     die("Erreur lors du seeding: " . $e->getMessage());
 }
 ```
+
+# Documentation des Seeders
+
+## Vue d'ensemble
+Les seeders permettent de peupler la base de données avec des données de test cohérentes.
+
+### Ordre d'exécution
+1. UsersTableSeeder - Crée les utilisateurs
+2. ConversationsTableSeeder - Crée les conversations
+3. ConversationsUsersTableSeeder - Lie les utilisateurs aux conversations
+4. MessagesTableSeeder - Génère les messages et statuts
+
+### Dépendances
+- PHP 8.1+
+- Faker ^1.23
+- PDO MySQL
+
+## Classes disponibles
+
+### DatabaseSeeder
+```php
+$seeder = new DatabaseSeeder();
+$seeder->run(); // Exécute tous les seeders dans l'ordre
+```
+
+### UsersTableSeeder
+Génère :
+- 1 admin (admin@gmail.com/admin)
+- 50 utilisateurs aléatoires
+```php
+$userSeeder = new UsersTableSeeder();
+$userSeeder->run();
+```
+
+### ConversationsTableSeeder
+Génère :
+- 5 conversations privées
+- 3 groupes de discussion
+```php
+$convSeeder = new ConversationsTableSeeder();
+$convSeeder->run();
+```
+
+### ConversationsUsersTableSeeder
+Assigne :
+- 2 participants pour les conversations privées
+- 3-6 participants pour les groupes (1 admin)
+```php
+$convUserSeeder = new ConversationsUsersTableSeeder();
+$convUserSeeder->run();
+```
+
+### MessagesTableSeeder
+Génère :
+- 5-15 messages par conversation
+- Types: texte, image, fichier, vocal
+- Statuts: envoyé, livré, lu
+```php
+$messageSeeder = new MessagesTableSeeder();
+$messageSeeder->run();
+```
