@@ -63,3 +63,103 @@ Content-Type: application/json
 - 403: Non autorisé
 - 404: Ressource non trouvée
 - 500: Erreur serveur
+
+# Documentation API du System de Seeding
+
+## Base de données
+
+### Obtenir une instance de la base de données
+```php
+$db = Database::getInstance()->getConnection();
+```
+
+## Seeding API
+
+### Exécuter tous les seeders
+```bash
+php database/seeds/DatabaseSeeder.php
+```
+
+### Classes disponibles
+
+#### DatabaseSeeder
+- **Méthode**: `run()`
+- **Description**: Exécute tous les seeders dans l'ordre correct
+- **Exemple**:
+```php
+$seeder = new DatabaseSeeder();
+$seeder->run();
+```
+
+#### UsersTableSeeder
+- **Méthode**: `run()`
+- **Configuration par défaut**:
+  - Admin user: admin@example.com / password123
+  - Nombre d'utilisateurs générés: 10
+- **Données générées**:
+  ```php
+  [
+    'username'   => string,    // Généré par Faker
+    'email'      => string,    // Format email valide
+    'password'   => string,    // Hashé avec password_hash()
+    'status'     => enum,      // 'active' ou 'inactive'
+    'created_at' => datetime   // Dans le dernier mois
+  ]
+  ```
+
+#### MessagesTableSeeder
+- **Méthode**: `run()`
+- **Configuration**:
+  - Messages par utilisateur: 3-8
+  - Types disponibles: text, image, file
+- **Données générées**:
+  ```php
+  [
+    'user_id'    => int,       // ID utilisateur existant
+    'content'    => string,    // Contenu selon le type
+    'type'       => enum,      // 'text', 'image', 'file'
+    'status'     => enum,      // 'sent', 'delivered', 'read'
+    'created_at' => datetime   // Dans le dernier mois
+  ]
+  ```
+
+## Personnalisation
+
+### Modifier le nombre d'utilisateurs
+Dans `UsersTableSeeder.php`:
+```php
+// Changer la valeur 10 pour générer plus/moins d'utilisateurs
+for ($i = 0; $i < 10; $i++) {
+    // ...
+}
+```
+
+### Modifier les types de messages
+Dans `MessagesTableSeeder.php`:
+```php
+$messageTypes = ['text', 'image', 'file']; // Ajouter/modifier les types
+```
+
+### Configuration de la base de données
+Dans `Database.php`:
+```php
+$host = 'localhost';
+$db   = 'chat_system';
+$user = 'root';
+$pass = '';
+```
+
+## Dépendances
+- PHP 7.4+
+- PDO MySQL
+- fakerphp/faker
+
+## Gestion des erreurs
+Toutes les erreurs sont capturées et affichées avec un message explicite :
+```php
+try {
+    // Code du seeding
+} catch(Exception $e) {
+    die("Erreur lors du seeding: " . $e->getMessage());
+}
+```
