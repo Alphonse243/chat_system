@@ -10,13 +10,20 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body style="background-color: #f0f2f5;">
+    <?php
+    require_once __DIR__ . '/controllers/NavigationController.php';
+    $navController = new NavigationController();
+    $translator = $navController->getTranslator();
+    $navController->renderNavbar();
+    ?>
+
     <div class="container-fluid py-3">
         <div class="row g-3">
             <!-- Users Online Section -->
             <div class="col-md-3">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0 text-primary fw-bold">Contacts</h5>
+                        <h5 class="mb-0 text-primary fw-bold" data-i18n="contacts"><?= $translator->translate('contacts') ?></h5>
                     </div>
                     <div class="card-body p-0">
                         <ul id="online-users" class="list-group list-group-flush">
@@ -29,7 +36,7 @@
             <div class="col-md-9">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">Chat Room</h6>
+                        <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= $translator->translate('chat_room') ?></h6>
                         <div class="d-flex align-items-center">
                             <button class="btn btn-light rounded-circle me-2"><i class="fas fa-phone"></i></button>
                             <button class="btn btn-light rounded-circle me-2"><i class="fas fa-video"></i></button>
@@ -98,7 +105,11 @@
                             </div>
                         </div>
                         <div class="input-group">
-                            <input type="text" id="message-input" class="form-control rounded-pill me-2" placeholder="Aa" style="background-color: #f0f2f5;">
+                            <input type="text" id="message-input" 
+                                   class="form-control rounded-pill me-2" 
+                                   data-i18n="type_message"
+                                   placeholder="<?= $translator->translate('type_message') ?>" 
+                                   style="background-color: #f0f2f5;">
                             <button id="send-button" class="btn btn-primary rounded-circle"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
@@ -111,5 +122,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/languageManager.js"></script>
 </body>
 </html>

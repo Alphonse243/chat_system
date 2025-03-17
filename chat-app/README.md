@@ -2,7 +2,17 @@
 
 # Chat Application
 
-This is a powerful chat application built with HTML, CSS, and JavaScript. It allows users to communicate in real-time and provides a user-friendly interface.
+Application de chat moderne avec support multilingue
+
+## Fonctionnalités
+
+### Système de Traduction Multilingue
+
+Le système de traduction permet de :
+- Gérer plusieurs langues (FR, EN, ES, ZH, SW)
+- Changer de langue dynamiquement sans rechargement
+- Stocker la préférence de langue en session
+- Traduire l'interface utilisateur complète
 
 ## Features
 
