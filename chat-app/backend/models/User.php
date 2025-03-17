@@ -46,6 +46,26 @@ class User extends BaseModel {
     }
 
     /**
+     * Authentifie un utilisateur avec email et mot de passe
+     * @param string $email Email de l'utilisateur
+     * @param string $password Mot de passe de l'utilisateur
+     * @return array|null Données de l'utilisateur si authentifié, sinon null
+     */
+    public function authenticate($email, $password) {
+        $sql = "SELECT id, username, name, email, password, avatar_url, bio, status, last_seen 
+                FROM users WHERE email = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if ($user && password_verify($password, $user['password'])) {
+            return $user;
+        }
+        return null;
+    }
+
+    /**
      * Met à jour le statut d'un utilisateur
      * @param int $userId ID de l'utilisateur
      * @param string $status Nouveau statut (online, offline, away, busy)

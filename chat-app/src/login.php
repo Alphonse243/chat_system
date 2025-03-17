@@ -29,7 +29,7 @@ if (isset($_SESSION['user_id'])) {
             <div class="col-md-6 col-sm-12">
                 <div class="card shadow-lg border-0">
                     <div class="card-body p-4">
-                        <form action="controllers/AuthController.php" method="POST">
+                        <form id="loginForm">
                             <div class="mb-3">
                                 <input type="email" class="form-control form-control-lg" name="email" placeholder="Email address" required>
                             </div>
@@ -70,6 +70,28 @@ if (isset($_SESSION['user_id'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/chat-system/chat-app/src/controllers/AuthController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Erreur de connexion: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la connexion');
+            });
+        });
+
         function handleCredentialResponse(response) {
             const formData = new FormData();
             formData.append('credential', response.credential);
