@@ -1,9 +1,9 @@
 {
-    "name": "chat/system",
-    "description": "shat system en php et html css js",
+    "name": "tchat/system",
+    "description": "chat",
     "autoload": {
         "psr-4": {
-            "Chat\\System\\": "src/"
+            "Tchat\\System\\": "src/"
         }
     },
     "authors": [
@@ -13,9 +13,6 @@
         }
     ],
     "require": {
-        "fakerphp/faker": "^1.23",
-        "php": ">=7.4",
-        "twbs/bootstrap": "^5.3",
-        "components/jquery": "^3.7"
+        "google/apiclient": "^2.18"
     }
 }

@@ -1,0 +1,67 @@
+body {
+    background-color: #f0f2f5;
+}
+
+.facebook-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #1877f2;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: #1c1e21;
+}
+
+.card {
+    border-radius: 8px;
+    background-color: white;
+}
+
+.form-control {
+    border-radius: 6px;
+    font-size: 1.1rem;
+    padding: 14px 16px;
+}
+
+.btn-primary {
+    background-color: #1877f2;
+    border-color: #1877f2;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.8rem;
+}
+
+.btn-success {
+    background-color: #42b72a;
+    border-color: #42b72a;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 0.8rem;
+}
+
+a {
+    color: #1877f2;
+}
+
+hr {
+    margin: 1.5rem 0;
+}
+
+/* Google Sign-In Button Styles */
+.google-btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin-top: 10px !important;
+}
+
+.g_id_signin > div {
+    width: 100% !important;
+    border-radius: 6px !important;
+}
+
+.g_id_signin iframe {
+    scale: 1.2;
+}
