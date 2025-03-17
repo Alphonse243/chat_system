@@ -1,12 +1,21 @@
 <?php
-class User {
-    private $conn;
-    
+/**
+ * Modèle de gestion des utilisateurs
+ * Gère toutes les opérations liées aux utilisateurs (CRUD, sessions, recherche)
+ */
+class User extends BaseModel {
     public function __construct($db) {
-        $this->conn = $db;
+        parent::__construct($db, 'users');
+        if (!$this->checkTable()) {
+            $this->handleError("Users table not found");
+        }
     }
 
-    // Create user with all fields
+    /**
+     * Crée un nouvel utilisateur
+     * @param array $userData Données de l'utilisateur (username, name, email, password, etc.)
+     * @return bool Succès de la création
+     */
     public function create($userData) {
         $sql = "INSERT INTO users (username, name, email, password, avatar_url, bio) 
                 VALUES (?, ?, ?, ?, ?, ?)";
@@ -22,7 +31,11 @@ class User {
         return $stmt->execute();
     }
 
-    // Get user by ID
+    /**
+     * Récupère les informations d'un utilisateur par son ID
+     * @param int $id ID de l'utilisateur
+     * @return array|null Données de l'utilisateur
+     */
     public function getById($id) {
         $sql = "SELECT id, username, name, email, avatar_url, bio, status, last_seen 
                 FROM users WHERE id = ?";
@@ -32,7 +45,11 @@ class User {
         return $stmt->get_result()->fetch_assoc();
     }
 
-    // Update user status
+    /**
+     * Met à jour le statut d'un utilisateur
+     * @param int $userId ID de l'utilisateur
+     * @param string $status Nouveau statut (online, offline, away, busy)
+     */
     public function updateStatus($userId, $status) {
         $sql = "UPDATE users SET status = ?, last_seen = CURRENT_TIMESTAMP WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
@@ -109,5 +126,43 @@ class User {
             $this->conn->rollback();
             throw $e;
         }
+    }
+
+    public function updateProfile($userId, $data) {
+        $sql = "UPDATE users SET name = ?, bio = ?, avatar_url = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sssi", $data['name'], $data['bio'], $data['avatar_url'], $userId);
+        return $stmt->execute();
+    }
+
+    public function searchUsers($searchTerm, $limit = 10) {
+        $searchTerm = "%$searchTerm%";
+        $sql = "SELECT id, username, name, avatar_url, status 
+                FROM users 
+                WHERE username LIKE ? OR name LIKE ? 
+                LIMIT ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ssi", $searchTerm, $searchTerm, $limit);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function createSession($userId, $ipAddress, $userAgent) {
+        $sessionToken = bin2hex(random_bytes(32));
+        $sql = "INSERT INTO user_sessions (user_id, ip_address, user_agent, session_token) 
+                VALUES (?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("isss", $userId, $ipAddress, $userAgent, $sessionToken);
+        return $stmt->execute() ? $sessionToken : false;
+    }
+
+    public function validateSession($userId, $sessionToken) {
+        $sql = "SELECT id FROM user_sessions 
+                WHERE user_id = ? AND session_token = ? 
+                AND last_activity > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("is", $userId, $sessionToken);
+        $stmt->execute();
+        return $stmt->get_result()->num_rows > 0;
     }
 }
