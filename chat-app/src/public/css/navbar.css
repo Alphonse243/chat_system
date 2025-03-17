@@ -1,0 +1,74 @@
+@media (max-width: 991.98px) {
+    .navbar-collapse-right {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        padding: 0;
+        z-index: 1031;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        overflow-y: auto;
+        margin-top: 56px;
+    }
+    
+    .navbar-collapse-right.show {
+        transform: translateX(0);
+    }
+
+    .navbar-nav {
+        padding: 1rem 0;
+        width: 100%;
+    }
+
+    .navbar-nav .nav-item {
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.75rem 0;
+        font-size: 1.1rem;
+        border-radius: 8px;
+    }
+
+    .navbar-collapse-right .d-flex {
+        flex-direction: column;
+        width: 100%;
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .navbar-collapse-right .d-flex > * {
+        width: 100%;
+        margin: 0.5rem 0 !important;
+    }
+
+    .navbar-collapse-right .btn,
+    .navbar-collapse-right .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1rem;
+    }
+
+    .navbar-collapse-right .dropdown-menu {
+        width: 100%;
+        position: static !important;
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+        margin-top: 0.5rem;
+    }
+
+    .navbar-collapse-right img.rounded-circle {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0.5rem;
+    }
+
+    .navbar-collapse-right .btn-outline-danger {
+        margin-top: 1rem !important;
+    }
+}
