@@ -1,0 +1,21 @@
+{
+    "name": "chat/system",
+    "description": "shat system en php et html css js",
+    "autoload": {
+        "psr-4": {
+            "Chat\\System\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Alphonse243",
+            "email": "alphonsekatumbascience@gmail.com"
+        }
+    ],
+    "require": {
+        "fakerphp/faker": "^1.23",
+        "php": ">=7.4",
+        "twbs/bootstrap": "^5.3",
+        "components/jquery": "^3.7"
+    }
+}
