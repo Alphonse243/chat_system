@@ -8,10 +8,51 @@ Ce projet est une application de chat web permettant aux utilisateurs de communi
 ## Fonctionnalités
 - Messagerie en temps réel
 - Authentification des utilisateurs
-- Conversations privées
-- Support des chats de groupe
+- Conversations privées et groupes
 - Historique des messages
-- Indicateurs de statut en ligne
+- Indicateurs de statut en ligne (online, offline, away, busy)
+- Suivi de lecture des messages (envoyé, livré, lu)
+- Support multi-fichiers (images, documents, audio)
+- Gestion des sessions utilisateurs
+- Traçabilité des connexions et activités
+- Support multi-appareils
+- Gestion des rôles dans les groupes (admin, membre)
+- Édition des messages
+- Profils utilisateurs personnalisables (avatar, bio)
+
+## Structure de la Base de Données
+
+### Tables Principales
+1. `users` - Gestion des utilisateurs
+   - Profil complet (username, email, avatar, bio)
+   - Statut de présence
+   - Historique d'activité
+
+2. `conversations` - Gestion des discussions
+   - Support des conversations privées
+   - Support des groupes de discussion
+   - Horodatage des activités
+
+3. `messages` - Système de messagerie
+   - Messages texte
+   - Support des fichiers (images, documents, audio)
+   - Historique des modifications
+
+4. `attachments` - Gestion des fichiers
+   - Support multi-formats
+   - Métadonnées des fichiers
+   - Stockage sécurisé
+
+5. `user_sessions` - Sécurité et Connexions
+   - Suivi des sessions
+   - Détection des connexions suspectes
+   - Support IPv4/IPv6
+
+### Sécurité
+- Mots de passe cryptés
+- Gestion des sessions
+- Traçabilité des connexions
+- Surveillance des activités suspectes
 
 ## Structure du Projet
 ```
@@ -48,10 +89,12 @@ mysql -u root -p chat_system < chat-app/backend/chat_system.sql
 ```
 
 ## Technologies Utilisées
-- Backend : PHP 8+ (sans framework)
-- Frontend : HTML, CSS, JavaScript
-- Base de données : MySQL
-- Serveur : Apache/Nginx
+- Backend : PHP 8+
+- Base de données : MySQL 8+
+- Frontend : HTML5, CSS3, JavaScript
+- WebSocket pour le temps réel
+- Support des formats de fichiers multiples
+- Gestion des sessions sécurisées
 
 ## Contribution
 N'hésitez pas à contribuer à ce projet en soumettant des pull requests.
