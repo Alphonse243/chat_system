@@ -36,7 +36,7 @@ class NavigationController {
                 // Items du menu principal
                 [
                     'label' => $this->translator->translate('home'),
-                    'url' => '/',
+                    'url' => 'index.php',
                     'active' => true
                 ],
                 [
@@ -46,7 +46,7 @@ class NavigationController {
                 ],
                 [
                     'label' => $this->translator->translate('settings'),
-                    'url' => '/settings',
+                    'url' => 'settings.php',
                     'active' => false
                 ]
             ],

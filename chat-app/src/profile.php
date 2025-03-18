@@ -3,6 +3,25 @@ session_start();
 require_once __DIR__ . '/controllers/NavigationController.php';
 $navController = new NavigationController();
 $translator = $navController->getTranslator();
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+require_once __DIR__ .'/../backend/config/database.php';
+require_once __DIR__ . '/models/User.php';
+
+// Récupérer les informations de l'utilisateur
+$db = Database::getInstance()->getConnection();
+$userModel = new User($db);
+$currentUser = $userModel->getById($_SESSION['user_id']);
+
+if (!$currentUser) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +29,7 @@ $translator = $navController->getTranslator();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Modern Chat Application</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -181,9 +200,9 @@ $translator = $navController->getTranslator();
     ?>
 
     <div class="container-fluid px-4">
-        <div class="text-center mb-4 fade-in">
-            <h1 class="mb-1 mt-5">John Doe</h1>
-            <p class="text-muted">Frontend Developer</p>
+        <div class="text-center col-lg-6 mx-auto mb-4 fade-in">
+            <h1 class="mb-1 mt-5"><?= htmlspecialchars($currentUser['username']) ?></h1>
+            <p class="text-muted"><?= htmlspecialchars($currentUser['bio']) ?></p>
         </div>
 
         <ul class="nav profile-nav justify-content-center mb-4 fade-in" style="--delay: 0.2s">
@@ -248,8 +267,8 @@ $translator = $navController->getTranslator();
     </div>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>

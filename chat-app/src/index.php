@@ -46,7 +46,7 @@ if (!$currentUser) {
                         <h5 class="mb-0 text-primary fw-bold" data-i18n="contacts"><?= $translator->translate('contacts') ?></h5>
                     </div>
                     <div class="card-body p-0">
-                        <div class="current-user mb-3 p-3 border-bottom">
+                        <div class="current-user mb-3 p-3 border-bottom ">
                             <div class="d-flex align-items-center">
                                 <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
                                      class="avatar me-2" 
@@ -57,8 +57,17 @@ if (!$currentUser) {
                                 </div>
                             </div>
                         </div>
-                        <ul id="online-users" class="list-group list-group-flush">
+                        <ul id="online-users" class="list-group list-group-flush current-user mb-3 p-3 border-bottom">
                             <!-- La liste des utilisateurs sera générée dynamiquement -->
+                            <div class="d-flex align-items-center">
+                                <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
+                                     class="avatar me-2" 
+                                     alt="<?= htmlspecialchars($currentUser['username']) ?>">
+                                <div>
+                                    <div class="fw-bold"><?= htmlspecialchars($currentUser['username']) ?></div>
+                                    <small class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></small>
+                                </div>
+                            </div>
                         </ul>
                     </div>
                 </div>
