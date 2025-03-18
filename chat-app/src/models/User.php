@@ -121,7 +121,7 @@ class User {
     //     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     // }
 
-    // Get user conversations
+    // Get user conversations / private
     public function getConversations($userId) {
         $sql = "SELECT
             c.id as conversations_id,
@@ -137,7 +137,7 @@ class User {
         FROM conversations c
                 INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
                  LEFT JOIN users u ON u.id = cp.user_id
-                WHERE cp.user_id = ?";
+                WHERE cp.user_id = ? AND c.type = 'private' LIMIT 0,5";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $userId);
         $stmt->execute();

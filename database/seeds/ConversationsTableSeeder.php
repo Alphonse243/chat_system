@@ -15,7 +15,7 @@ class ConversationsTableSeeder {
         ");
 
         // Generate 5 private conversations
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $stmt->execute([
                 null,
                 'private',
@@ -24,7 +24,7 @@ class ConversationsTableSeeder {
         }
 
         // Generate 3 group conversations
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $stmt->execute([
                 $this->faker->words(3, true),
                 'group',

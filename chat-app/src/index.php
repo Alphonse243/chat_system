@@ -66,13 +66,13 @@ if (!$currentUser) {
                             <?php
                                 foreach($getConversations as $item){
                                     ?>
-                                    <div class=" btn btn-primary d-flex align-items-center">
+                                    <div class=" btn btn-primary d-flex align-items-center mb-3">
                                         <img src="<?= htmlspecialchars($item['conversations_name'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($item['conversations_name'])) ?>" 
                                             class="avatar me-2" 
                                             alt="<?= htmlspecialchars($item['conversations_name']) ?>">
                                         <div>
-                                            <div class="fw-bold text-white "><?= htmlspecialchars($item['conversations_name']) ?></div>
-                                            <small class=" text-white  "><?= htmlspecialchars($item['users_name']) ?>,......</small>
+                                            <div class="fw-bold text-white d-flex "><?= $item['conversations_name'] ?> <?= $item['conversations_type'] ?>  </div>
+                                            <small class=" text-white  ">Last message de la conversation,......</small>
                                         </div>
                                     </div>
                                     <?php
