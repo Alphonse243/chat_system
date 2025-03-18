@@ -93,7 +93,7 @@ if (!$currentUser) {
                             <button class="btn btn-light rounded-circle me-2"><i class="fas fa-video"></i></button>
                             <button class="btn btn-light rounded-circle"><i class="fas fa-info-circle"></i></button>
                         </div>
-                    </div>
+                    </div> 
                     <div class="card-body bg-white">
                         <div id="messages" class="messages-container mb-3" style="max-height: 500px; overflow-y: auto;">
                             <div class="message received">
