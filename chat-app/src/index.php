@@ -14,7 +14,7 @@ $userModel = new User($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
     //// DEBUG
-// var_dump($getConversations);
+// var_dump($currentUser);
 // die();
 
 if (!$currentUser) {
@@ -62,12 +62,12 @@ if (!$currentUser) {
                             </div>
                         </div>
                         <ul id="online-users" class="list-group list-group-flush current-user mb-3 p-3 border-bottom">
-                            <!-- La liste des utilisateurs sera générée dynamiquement -->
+                            <!-- La liste des conversation privée sera générée dynamiquement -->
                             <?php
                                 foreach($getConversations as $item){
                                     ?>
                                     <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                        <img src="<?= htmlspecialchars($item['conversations_name'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($item['conversations_name'])) ?>" 
+                                        <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
                                             class="avatar me-2" 
                                             alt="<?= htmlspecialchars($item['conversations_name']) ?>">
                                         <div>
