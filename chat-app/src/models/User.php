@@ -7,7 +7,7 @@ class User {
     protected $conn;
     protected $table = 'users';
 
-    public function __construct($db) {
+    public function __construct($db) { 
         $this->conn = $db;
         if (!$this->checkTable()) {
             throw new Exception("Users table not found");

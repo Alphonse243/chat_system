@@ -45,8 +45,18 @@ class NavigationController {
                     'active' => false 
                 ],
                 [
+                    'label' => $this->translator->translate('login'),
+                    'url' => 'login.php',
+                    'active' => false 
+                ],
+                [
                     'label' => $this->translator->translate('settings'),
                     'url' => 'settings.php',
+                    'active' => false
+                ],
+                [
+                    'label' => $this->translator->translate('conversation'),
+                    'url' => 'conversation.php',
                     'active' => false
                 ]
             ],

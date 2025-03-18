@@ -3,13 +3,23 @@
  * Modèle de gestion des conversations
  * Gère les conversations privées et de groupe
  */
-class Conversation extends BaseModel {
-    public function __construct($db) {
-        parent::__construct($db, 'conversations');
+class Conversation {
+    protected $conn;
+    protected $table = 'conversations';
+
+    public function __construct($db) { 
+        $this->conn = $db;
         if (!$this->checkTable()) {
-            $this->handleError("Conversations table not found");
+            throw new Exception("conversations table not found");
         }
     }
+
+    
+    protected function checkTable() {
+        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
+        return $result->num_rows > 0;
+    }
+
 
     /**
      * Crée une nouvelle conversation

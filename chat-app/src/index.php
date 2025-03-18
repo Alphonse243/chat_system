@@ -66,15 +66,17 @@ if (!$currentUser) {
                             <?php
                                 foreach($getConversations as $item){
                                     ?>
-                                    <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                        <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
-                                            class="avatar me-2" 
-                                            alt="<?= htmlspecialchars($item['conversations_name']) ?>">
-                                        <div>
-                                            <div class="fw-bold text-white d-flex "><?= $item['conversations_name'] ?> <?= $item['conversations_type'] ?>  </div>
-                                            <small class=" text-white  ">Last message de la conversation,......</small>
+                                    <a href="conversation.php?conversationId=<?= htmlspecialchars($item['conversations_id']) ?>"> 
+                                        <div class=" btn btn-primary d-flex align-items-center mb-3">
+                                            <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
+                                                class="avatar me-2" 
+                                                alt="<?= htmlspecialchars($item['conversations_name']) ?>">
+                                            <div>
+                                                <div class="fw-bold text-white d-flex "><?= $item['conversations_name'] ?> <?= $item['conversations_type'] ?>  </div>
+                                                <small class=" text-white  ">Last message de la conversation,......</small>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </a>
                                     <?php
                                 }
                             ?>
@@ -84,10 +86,10 @@ if (!$currentUser) {
                 </div>
             </div>
             <!-- Chat Section -->
-            <div class="col-md-9">
+            <!-- <div class="col-md-9">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= $translator->translate('chat_room') ?></h6>
+                        <h6 class="mb-0 fw-bold" data-i18n="chat_room"></h6>
                         <div class="d-flex align-items-center">
                             <button class="btn btn-light rounded-circle me-2"><i class="fas fa-phone"></i></button>
                             <button class="btn btn-light rounded-circle me-2"><i class="fas fa-video"></i></button>
@@ -113,7 +115,7 @@ if (!$currentUser) {
                                     <div class="message-time">10:04</div>
                                 </div>
                             </div>
-                            <!-- 
+                            
                             <div class="message received">
                                 <div class="d-flex align-items-start">
                                     <img src="https://ui-avatars.com/api/?name=John+Doe" class="avatar me-2" alt="John">
@@ -147,7 +149,7 @@ if (!$currentUser) {
                                     <div class="message-time">10:08</div>
                                 </div>
                             </div> -->
-                        </div>
+                        <!-- </div>
                         <div id="typing-indicator" class="typing-indicator d-none">
                             <div class="typing-dots">
                                 <span></span>
@@ -162,10 +164,10 @@ if (!$currentUser) {
                                    placeholder="<?= $translator->translate('type_message') ?>" 
                                    style="background-color: #f0f2f5;">
                             <button id="send-button" class="btn btn-primary rounded-circle"><i class="fas fa-paper-plane"></i></button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
-            </div>
+            </div> 
         </div>
     </div>
     <!-- Scripts -->

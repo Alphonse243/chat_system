@@ -106,9 +106,9 @@
                      alt="Avatar utilisateur">
                 
                 <!-- Bouton de déconnexion -->
-                <button class="btn btn-outline-danger btn-sm" data-i18n="logout">
+                <a href="logout.php" class="btn btn-outline-danger btn-sm" data-i18n="logout">
                     <?= $navData['logoutText'] ?>
-                </button>
+                </a>
             </div>
         </div>
     </div>
