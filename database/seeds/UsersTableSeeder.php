@@ -52,7 +52,7 @@ class UsersTableSeeder {
             true
         ]);
 
-        // Generate 10 random users
+        // Generate 50 random users
         for ($i = 0; $i < 50; $i++) {
             $stmt->execute([
                 $this->faker->userName,
