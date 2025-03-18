@@ -110,16 +110,63 @@ class User {
         return $stmt->execute();
     }
 
+    // // Get user conversations
+    // public function getConversations($userId) {
+    //     $sql = "SELECT c.* FROM conversations c
+    //             INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
+    //             WHERE cp.user_id = ?";
+    //     $stmt = $this->conn->prepare($sql);
+    //     $stmt->bind_param("i", $userId);
+    //     $stmt->execute();
+    //     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // }
+
     // Get user conversations
     public function getConversations($userId) {
-        $sql = "SELECT c.* FROM conversations c
+        $sql = "SELECT
+            c.id as conversations_id,
+            c.name as conversations_name,
+            c.type as conversations_type,
+            c.updated_at as conversations_updated_at,
+            u.id as users_id,
+            u.name as users_name,
+            u.status as users_statuts,
+            u.last_seen as users_last_seen,
+            u.avatar_url as users_avatar_url 
+        
+        FROM conversations c
                 INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
+                 LEFT JOIN users u ON u.id = cp.user_id
                 WHERE cp.user_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $userId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
+
+    // // Get user conversations
+    // public function getConversations($userId) {
+    //     $sql = "SELECT
+    //         c.id as conversations_id,
+    //         c.name as conversations_name,
+    //         c.type as conversations_type,
+    //         c.updated_at as conversations_updated_at,
+    //         u.id as users_id,
+    //         u.name as users_name,
+    //         u.status as users_statuts,
+    //         u.last_seen as users_last_seen,
+    //         u.avatar_url as users_avatar_url
+
+    //         FROM conversations c
+    //             INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
+    //             LEFT JOIN users u ON u.id = cp.user_id
+    //             WHERE cp.user_id = ? AND c.type = 'group'";
+    //     $stmt = $this->conn->prepare($sql);
+    //     $stmt->bind_param("i", $userId);
+    //     $stmt->execute();
+    //     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // }
+
 
     // Send message
     public function sendMessage($senderId, $conversationId, $content, $messageType = 'text') {

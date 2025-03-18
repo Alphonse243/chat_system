@@ -12,6 +12,10 @@ require_once __DIR__ . '/models/User.php';
 $db = Database::getInstance()->getConnection();
 $userModel = new User($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
+$getConversations = $userModel->getConversations($_SESSION['user_id']);
+    //// DEBUG
+// var_dump($getConversations);
+// die();
 
 if (!$currentUser) {
     session_destroy();
@@ -59,15 +63,22 @@ if (!$currentUser) {
                         </div>
                         <ul id="online-users" class="list-group list-group-flush current-user mb-3 p-3 border-bottom">
                             <!-- La liste des utilisateurs sera générée dynamiquement -->
-                            <div class="d-flex align-items-center">
-                                <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
-                                     class="avatar me-2" 
-                                     alt="<?= htmlspecialchars($currentUser['username']) ?>">
-                                <div>
-                                    <div class="fw-bold"><?= htmlspecialchars($currentUser['username']) ?></div>
-                                    <small class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></small>
-                                </div>
-                            </div>
+                            <?php
+                                foreach($getConversations as $item){
+                                    ?>
+                                    <div class=" btn btn-primary d-flex align-items-center">
+                                        <img src="<?= htmlspecialchars($item['conversations_name'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($item['conversations_name'])) ?>" 
+                                            class="avatar me-2" 
+                                            alt="<?= htmlspecialchars($item['conversations_name']) ?>">
+                                        <div>
+                                            <div class="fw-bold text-white "><?= htmlspecialchars($item['conversations_name']) ?></div>
+                                            <small class=" text-white  "><?= htmlspecialchars($item['users_name']) ?>,......</small>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                            ?>
+                            
                         </ul>
                     </div>
                 </div>

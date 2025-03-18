@@ -13,6 +13,7 @@
         }
     ],
     "require": {
-        "google/apiclient": "^2.18"
+       
+        "fakerphp/faker": "^1.24"
     }
 }
