@@ -1,9 +1,23 @@
 <?php
-// session_start();
-// if (!isset($_SESSION['user_id'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+require_once __DIR__ .'/../backend/config/database.php';
+require_once __DIR__ . '/models/User.php';
+
+// Récupérer les informations de l'utilisateur
+$db = Database::getInstance()->getConnection();
+$userModel = new User($db);
+$currentUser = $userModel->getById($_SESSION['user_id']);
+
+if (!$currentUser) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,8 +46,19 @@
                         <h5 class="mb-0 text-primary fw-bold" data-i18n="contacts"><?= $translator->translate('contacts') ?></h5>
                     </div>
                     <div class="card-body p-0">
+                        <div class="current-user mb-3 p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
+                                     class="avatar me-2" 
+                                     alt="<?= htmlspecialchars($currentUser['username']) ?>">
+                                <div>
+                                    <div class="fw-bold"><?= htmlspecialchars($currentUser['username']) ?></div>
+                                    <small class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></small>
+                                </div>
+                            </div>
+                        </div>
                         <ul id="online-users" class="list-group list-group-flush">
-                            <!-- Cette section sera générée dynamiquement par PHP -->
+                            <!-- La liste des utilisateurs sera générée dynamiquement -->
                         </ul>
                     </div>
                 </div>

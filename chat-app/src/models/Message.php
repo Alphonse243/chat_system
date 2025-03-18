@@ -99,4 +99,38 @@ class Message extends BaseModel {
         $stmt->bind_param("si", $content, $messageId);
         return $stmt->execute();
     }
+
+    /**
+     * Récupère les messages d'une conversation privée entre deux utilisateurs
+     * 
+     * @param int $userId1 ID du premier utilisateur
+     * @param int $userId2 ID du deuxième utilisateur
+     * @param int $limit Nombre de messages à récupérer (optionnel)
+     * @param int $offset Offset pour la pagination (optionnel)
+     * @return array Messages de la conversation
+     */
+    public function getPrivateMessages($userId1, $userId2, $limit = 50, $offset = 0) {
+        $sql = "SELECT m.*, u.username as sender_name, u.avatar_url 
+                FROM messages m 
+                INNER JOIN users u ON m.sender_id = u.id
+                INNER JOIN conversations c ON m.conversation_id = c.id
+                INNER JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
+                INNER JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
+                WHERE c.type = 'private' 
+                AND cp1.user_id = ? 
+                AND cp2.user_id = ?
+                AND cp1.user_id != cp2.user_id
+                ORDER BY m.created_at DESC
+                LIMIT ? OFFSET ?";
+                
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("iiii", $userId1, $userId2, $limit, $offset);
+        
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            return $result->fetch_all(MYSQLI_ASSOC);
+        }
+        
+        return [];
+    }
 }

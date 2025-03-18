@@ -17,7 +17,7 @@ if (isset($_SESSION['user_id'])) {
     <title>Login - Chat Application</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/login.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- <script src="https://accounts.google.com/gsi/client" async defer></script> -->
 </head>
 <body class="bg-light">
     <div class="container">
@@ -29,12 +29,12 @@ if (isset($_SESSION['user_id'])) {
             <div class="col-md-6 col-sm-12">
                 <div class="card shadow-lg border-0">
                     <div class="card-body p-4">
-                        <form id="loginForm">
+                        <form id="loginForm"> 
                             <div class="mb-3">
-                                <input type="email" class="form-control form-control-lg" name="email" placeholder="Email address" required>
+                                <input type="email" value="admin@gmail.com" class="form-control form-control-lg" name="email" placeholder="Email address" required>
                             </div>
                             <div class="mb-3">
-                                <input type="password" class="form-control form-control-lg" name="password" placeholder="Password" required>
+                                <input type="password" value="admin" class="form-control form-control-lg" name="password" placeholder="Password" required>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary btn-lg">Log In</button>
@@ -76,19 +76,52 @@ if (isset($_SESSION['user_id'])) {
 
             fetch('/chat-system/chat-app/src/controllers/AuthController.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
             })
-            .then(response => response.json())
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server response was not JSON');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     window.location.href = data.redirect;
                 } else {
-                    alert('Erreur de connexion: ' + data.message);
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.textContent = data.message;
+                    
+                    const form = document.getElementById('loginForm');
+                    // Supprimer l'alerte précédente si elle existe
+                    const existingAlert = form.querySelector('.alert');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                    form.insertBefore(alertDiv, form.firstChild);
+                    
+                    setTimeout(() => alertDiv.remove(), 3000);
                 }
             })
             .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la connexion');
+                console.error('Error:', error);
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger mt-3';
+                alertDiv.role = 'alert';
+                alertDiv.textContent = 'Server error. Please try again later.';
+                
+                const form = document.getElementById('loginForm');
+                const existingAlert = form.querySelector('.alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+                form.insertBefore(alertDiv, form.firstChild);
+                setTimeout(() => alertDiv.remove(), 3000);
             });
         });
 

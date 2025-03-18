@@ -3,12 +3,20 @@
  * Modèle de gestion des utilisateurs
  * Gère toutes les opérations liées aux utilisateurs (CRUD, sessions, recherche)
  */
-class User extends BaseModel {
+class User {
+    protected $conn;
+    protected $table = 'users';
+
     public function __construct($db) {
-        parent::__construct($db, 'users');
+        $this->conn = $db;
         if (!$this->checkTable()) {
-            $this->handleError("Users table not found");
+            throw new Exception("Users table not found");
         }
+    }
+
+    protected function checkTable() {
+        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
+        return $result->num_rows > 0;
     }
 
     /**
@@ -63,6 +71,31 @@ class User extends BaseModel {
             return $user;
         }
         return null;
+    }
+
+    /**
+     * Trouve un utilisateur par son email
+     * @param string $email Email de l'utilisateur
+     * @return array|null Données de l'utilisateur ou null si non trouvé
+     */
+    public function findByEmail($email) {
+        $sql = "SELECT id, username, name, email, password, avatar_url, bio, status, last_seen 
+                FROM users WHERE email = ?";
+        try {
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $this->conn->error);
+            }
+            $stmt->bind_param("s", $email);
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
+            $result = $stmt->get_result();
+            return $result->fetch_assoc();
+        } catch (Exception $e) {
+            error_log("Database error in findByEmail: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -184,5 +217,10 @@ class User extends BaseModel {
         $stmt->bind_param("is", $userId, $sessionToken);
         $stmt->execute();
         return $stmt->get_result()->num_rows > 0;
+    }
+
+    protected function handleError($message) {
+        error_log($message);
+        throw new Exception($message);
     }
 }
