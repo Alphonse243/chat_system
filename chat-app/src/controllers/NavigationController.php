@@ -6,7 +6,7 @@ require_once __DIR__ . '/../core/Translator.php';
  * Responsable de la logique liée à la barre de navigation
  */
 class NavigationController {
-    private $translator;
+    private $translator; 
 
     public function __construct() {
         // Détection de la langue (à implémenter selon vos besoins)

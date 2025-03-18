@@ -32,7 +32,7 @@ class Translator {
         $file = __DIR__ . "/../translations/{$this->lang}.php";
         if (file_exists($file)) {
             $this->translations = require $file;
-        }
+        } 
     }
 
     /**

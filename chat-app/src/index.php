@@ -11,7 +11,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Chat Application</title>
-    <!-- Utiliser CDN en attendant la configuration locale -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -20,7 +19,7 @@
     <?php
     require_once __DIR__ . '/controllers/NavigationController.php';
     $navController = new NavigationController();
-    $translator = $navController->getTranslator();
+    $translator = $navController->getTranslator(); 
     $navController->renderNavbar();
     ?>
 
@@ -69,7 +68,7 @@
                                     <div class="message-time">10:04</div>
                                 </div>
                             </div>
-
+                            <!-- 
                             <div class="message received">
                                 <div class="d-flex align-items-start">
                                     <img src="https://ui-avatars.com/api/?name=John+Doe" class="avatar me-2" alt="John">
@@ -102,7 +101,7 @@
                                     <div class="message-text">Parfait! On se voit demain alors 👍</div>
                                     <div class="message-time">10:08</div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                         <div id="typing-indicator" class="typing-indicator d-none">
                             <div class="typing-dots">
