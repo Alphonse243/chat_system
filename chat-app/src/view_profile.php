@@ -110,13 +110,13 @@ $userConversations = $userModel->getConversations($viewedUser['id']);
                  alt="<?= htmlspecialchars($viewedUser['username']) ?>"
                  style="width: 150px; height: 150px;">
             <h3 class="card-title"><?= htmlspecialchars($viewedUser['username']) ?></h3>
-            <p class="text-muted"><?= htmlspecialchars($viewedUser['email']) ?></p>
+            <p class="text-muted"><?= htmlspecialchars($viewedUser['bio']) ?></p>
             <div class="status-badge mb-3">
                 <span class="badge <?= $viewedUser['status'] === 'online' ? 'bg-success' : 'bg-secondary' ?>">
                     <?= ucfirst($viewedUser['status']) ?>
                 </span>
             </div>
-            <a href="conversation.php?user_id=<?= htmlspecialchars($viewedUser['id']) ?>" 
+            <a href="create_conversation.php?user_id=<?= htmlspecialchars($viewedUser['id']) ?>" 
                class="btn btn-primary">
                 Send Message
             </a>

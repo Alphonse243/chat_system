@@ -21,7 +21,7 @@ if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
     if ($otherUserId === $currentUserId) {
         header('Location: index.php');
         exit;
-    }
+    } 
 
     // Create or get private conversation
     $conversationId = $userModel->createPrivateConversation($currentUserId, $otherUserId);

@@ -88,19 +88,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="col-md-3">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0 text-primary fw-bold" data-i18n="contacts"><?= $translator->translate('contacts') ?></h5>
+                        <h5 class="mb-0 text-primary fw-bold" data-i18n="conversation"><?= $translator->translate('Conversations') ?></h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="current-user mb-3 p-3 border-bottom ">
-                            <div class="d-flex align-items-center">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($currentUser['username']) ?>" 
-                                     class="avatar me-2" 
-                                     alt="<?= htmlspecialchars($currentUser['username']) ?>">
-                                <div>
-                                    <div class="fw-bold"><?= htmlspecialchars($currentUser['username']) ?></div>
-                                    <small class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></small>
+                            
+                                <div class="d-flex align-items-center">
+                                    <a href="profile.php">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($currentUser['username']) ?>" 
+                                            class="avatar me-2" 
+                                            alt="<?= htmlspecialchars($currentUser['username']) ?>">
+                                    </a>
+                                    <div class="" >
+                                        <div class="fw-bold"><?= htmlspecialchars($currentUser['username']) ?></div>
+                                        <small class="text-muted  "><?= htmlspecialchars($currentUser['email']) ?></small>
+                                    </div>
                                 </div>
-                            </div>
+                               
+                            
                         </div>
                         <ul id="online-users" class="list-group list-group-flush current-user mb-3 p-3 border-bottom">
                             <!-- La liste des conversation privée sera générée dynamiquement -->
@@ -150,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4 col-lg-8">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0 text-primary fw-bold" data-i18n="contacts">Users</h5>
@@ -174,7 +179,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 <div class="fw-bold text-white d-flex "><?= $user['username'] ?>  </div>
                                                 <small class="text-white"><?= $user['email'] ?></small>
                                                 <div class="mt-2">
-                                                    <a href="conversation.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-light me-2">Create Conversation</a>
+                                                    <a href="create_conversation.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-light me-2">Create Conversation</a>
                                                     <a href="view_profile.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-info">View Profile</a>
                                                 </div>
                                             </div>

@@ -242,7 +242,7 @@ $userConversations = $userModel->getConversations($_SESSION['user_id']);
                         
                         <!-- User Info -->
                         <h4 class="card-title"><?= htmlspecialchars($currentUser['username']) ?></h4>
-                        <p class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></p>
+                        <p class="text-muted"><?= htmlspecialchars($currentUser['bio']) ?></p>
                         
                         <!-- Profile Form -->
                         <form method="post" action="controllers/ProfileController.php">
@@ -270,6 +270,9 @@ $userConversations = $userModel->getConversations($_SESSION['user_id']);
             <div class="col-md-3 fade-in" style="--delay: 0.4s">
                 <div class="profile-section">
                     <h2 class="section-title"><?= $translator->translate('About') ?></h2>
+                    <div class="md-3">
+                        <p class="text-muted"><?= htmlspecialchars($currentUser['bio']) ?></p>
+                    </div>
                     <div class="mb-3">
                         <i class="fas fa-briefcase me-2"></i> <?= $translator->translate('Works at') ?> Facebook
                     </div>

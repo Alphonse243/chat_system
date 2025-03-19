@@ -15,6 +15,7 @@
 <!-- Barre de navigation principale - fixée en haut de la page -->
 <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white border-bottom shadow-sm">
     <div class="container-fluid">
+        
         <!-- Logo et nom de l'application - Lien vers la page d'accueil -->
         <a class="navbar-brand text-primary fw-bold" href="<?= $navData['homeUrl'] ?>">
             <i class="fas fa-comments me-2"></i>
@@ -30,6 +31,13 @@
         <div class="collapse navbar-collapse navbar-collapse-right" id="navbarNav">
             <!-- Menu principal - Liste des liens de navigation -->
             <ul class="navbar-nav me-auto">
+<!--                 
+                <li class="nav-item">
+                    <form  method="post">
+                        <input name="seach" class="form-control" placeholder="Chercher un utilisateur" type="seach">
+                        <button type="submit" name="seach" class="btn btn-small  btn-primary" > search</button>
+                    </form>
+                </li> -->
                 <?php foreach ($navData['menuItems'] as $item): ?>
                     <li class="nav-item">
                         <a class="nav-link <?= $item['active'] ? 'active' : '' ?>" 

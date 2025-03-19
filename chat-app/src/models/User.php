@@ -118,7 +118,7 @@ class User extends BaseModel
         FROM conversations c
                 INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
                  LEFT JOIN users u ON u.id = cp.user_id
-                WHERE cp.user_id = ? AND c.type = 'private' LIMIT 0,5";
+                WHERE cp.user_id = ? AND c.type = 'private' ORDER BY c.updated_at DESC ";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $userId);
         $stmt->execute();

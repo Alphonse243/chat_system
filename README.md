@@ -101,3 +101,5 @@ N'hésitez pas à contribuer à ce projet en soumettant des pull requests.
 
 ## Licence
 [Informations de licence à ajouter]
+
+<!-- 0998631275 -->
