@@ -39,6 +39,72 @@ if (!$currentUser) {
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Styles imitant WhatsApp */
+        body {
+            background-color: #e5ddd5; /* Fond d'écran WhatsApp */
+        }
+        .card {
+            background-color: #fff;
+            border: none;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #00a884; /* Couleur de l'en-tête WhatsApp */
+            color: white;
+        }
+        .messages-container {
+            padding: 10px;
+        }
+        .message {
+            clear: both;
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.3;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .sent {
+            background-color: #dcf8c6; /* Bulle envoyée */
+            float: right;
+            text-align: right;
+        }
+        .received {
+            background-color: #fff; /* Bulle reçue */
+            float: left;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            display: block;
+        }
+        .input-group {
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-radius: 20px;
+        }
+        .form-control {
+            border: none;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+        .form-control:focus {
+            outline: none !important;
+        }
+        .btn-light {
+            background-color: #f0f0f0;
+            border: none;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
     <?php
@@ -117,24 +183,152 @@ if (!$currentUser) {
                                 <span></span>
                             </div>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group d-flex align-items-center">
                             <input type="text" id="message-input" 
                                    class="form-control rounded-pill me-2" 
                                    data-i18n="type_message"
                                    placeholder="<?= $translator->translate('type_message') ?>" 
-                                   style="background-color: #f0f2f5;">
-                            <button id="send-button" class="btn btn-primary rounded-circle" title="<?= $translator->translate('send') ?>"><i class="fas fa-paper-plane"></i></button>
+                                   style="background-color: #f0f2f0;">
+                            
+                            <!-- Bouton Micro/Envoi -->
+                            <button id="record-button" class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('record_voice') ?>">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="send-button" class="btn btn-primary rounded-circle" title="<?= $translator->translate('send') ?>" style="display:none;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div id="recording-indicator" class="d-none align-items-center mt-2">
+                            <i class="fas fa-circle text-danger me-1"></i>
+                            <span><?= $translator->translate('recording') ?>...</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Scripts -->
     <script src="js/jquery-2.2.4.min.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>
+    <script>
+        $(document).ready(function() {
+            let recording = false;
+            let mediaRecorder;
+            let audioChunks = [];
+
+            $('#record-button').click(function() {
+                if (!recording) {
+                    startRecording();
+                } else {
+                    stopRecording();
+                }
+            });
+
+            async function startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        sendVoiceMessage(audioBlob);
+                    };
+
+                    mediaRecorder.start();
+                    recording = true;
+                    $('#record-button').html('<i class="fas fa-stop"></i>');
+                    $('#recording-indicator').removeClass('d-none');
+                    $('#message-input').prop('disabled', true);
+                    $('#send-button').hide();
+                } catch (error) {
+                    console.error("Erreur d'accès au micro :", error);
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        alert("L'accès au micro a été refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                    } else {
+                        alert("Erreur d'accès au micro. Veuillez vérifier les permissions.");
+                    }
+                }
+            }
+
+            function stopRecording() {
+                mediaRecorder.stop();
+                recording = false;
+                $('#record-button').html('<i class="fas fa-microphone"></i>');
+                $('#recording-indicator').addClass('d-none');
+                $('#message-input').prop('disabled', false);
+                if ($('#message-input').val().trim() === '') {
+                    $('#record-button').show();
+                    $('#send-button').hide();
+                } else {
+                    $('#record-button').hide();
+                    $('#send-button').show();
+                }
+            }
+
+            function sendVoiceMessage(audioBlob) {
+                let formData = new FormData();
+                formData.append('audio', audioBlob, 'voice.webm');
+                formData.append('conversation_id', '<?php echo $_GET['conversationId']; ?>');
+
+                $.ajax({
+                    url: '../backend/controllers/MessageController.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        console.log("Réponse du serveur :", response);
+                        location.reload();
+                    },
+                    error: function(error) {
+                        console.error("Erreur lors de l'envoi du message vocal :", error);
+                    }
+                });
+            }
+
+            $('#send-button').click(function() {
+                const messageText = $('#message-input').val();
+                if (messageText.trim() !== '') {
+                    $.ajax({
+                        url: '../backend/controllers/MessageController.php',
+                        type: 'POST',
+                        data: {
+                            content: messageText,
+                            conversation_id: '<?php echo $_GET['conversationId']; ?>',
+                            message_type: 'text'
+                        },
+                        success: function(response) {
+                            console.log("Message envoyé :", response);
+                            $('#message-input').val('');
+                            location.reload();
+                        },
+                        error: function(error) {
+                            console.error("Erreur lors de l'envoi du message :", error);
+                        }
+                    });
+                }
+            });
+
+            $('#message-input').on('input', function() {
+                if ($(this).val().trim() !== '') {
+                    $('#record-button').hide();
+                    $('#send-button').show();
+                } else {
+                    $('#record-button').show();
+                    $('#send-button').hide();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
