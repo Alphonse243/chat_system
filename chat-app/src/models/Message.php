@@ -12,6 +12,10 @@ class Message extends BaseModel {
     protected $table = 'messages';
     public $timestamps = false;
 
+    public function __construct($db) {
+        parent::__construct($db, $this->table);
+    }
+
     /**
      * Crée un nouveau message dans la conversation
      * @param int $senderId ID de l'expéditeur
@@ -21,15 +25,20 @@ class Message extends BaseModel {
      * @param string|null $fileUrl URL du fichier si le type n'est pas 'text'
      * @return bool Succès de la création
      */
-    public function create(int $senderId, int $conversationId, string $content, string $messageType = 'text', string $fileUrl = null)
+    public function create(int $senderId, int $conversationId, string $content, string $messageType = 'text', ?string $fileUrl = null)
     {
-        return static::query()->create([
-            'sender_id' => $senderId,
-            'conversation_id' => $conversationId,
-            'content' => $content,
-            'message_type' => $messageType,
-            'file_url' => $fileUrl,
-        ]);
+        $sql = "INSERT INTO {$this->table} (sender_id, conversation_id, content, message_type, file_url) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("iissi", $senderId, $conversationId, $content, $messageType, $fileUrl);
+        $result = $stmt->execute();
+        
+        if ($result) {
+            $messageId = $this->conn->insert_id;
+            $this->createMessageStatus($messageId, $conversationId);
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -1,15 +1,29 @@
 <?php
 
 namespace ChatApp\Models;
+require_once __DIR__ . '/BaseModel.php';
+require_once __DIR__ . '/Conversation.php';
+require_once __DIR__ . '/Message.php';
+require_once __DIR__ . '/User.php';
+
+use ChatApp\Models\Conversation;
+use ChatApp\Models\Message;
+use ChatApp\Models\User;
 
 /**
  * Modèle de gestion des conversations
  * Gère les conversations privées et de groupe
  */
-class Conversation extends BaseModel {
+
+/**
+ * Modèle de gestion des conversations
+ * Gère les conversations privées et de groupe
+ */
+class Conversation extends BaseModel
+{
     protected $table = 'conversations';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function __construct($db) {
         parent::__construct($db, $this->table);
@@ -17,15 +31,14 @@ class Conversation extends BaseModel {
 
     /**
      * Crée une nouvelle conversation
-     * @param string|null $name Nom de la conversation (peut être null)
-     * @param string $type Type de la conversation (private, group, etc.)
+     * @param array $data Données de la conversation
      * @return bool Succès de la création
      */
-    public function create(?string $name, string $type)
+    public function create(array $data)
     {
         $sql = "INSERT INTO {$this->table} (name, type) VALUES (?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ss", $name, $type);
+        $stmt->bind_param("ss", $data['name'], $data['type']);
         return $stmt->execute();
     }
 

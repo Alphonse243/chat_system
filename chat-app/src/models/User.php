@@ -2,7 +2,10 @@
 
 namespace ChatApp\Models;
 
-require_once __DIR__ . '/BaseModel.php'; // Add this line
+require_once __DIR__ . '/BaseModel.php';
+require_once __DIR__ . '/Conversation.php';
+
+use ChatApp\Models\Conversation;
 
 /**
  * Modèle de gestion des utilisateurs
@@ -147,6 +150,8 @@ class User extends BaseModel
     // Create or get private conversation
     public function createPrivateConversation(int $userId1, int $userId2)
     {
+        $conversationModel = new Conversation($this->conn);
+
         // First check if conversation exists
         $sql = "SELECT c.id FROM conversations c
                 INNER JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
@@ -165,17 +170,17 @@ class User extends BaseModel
         // Create new conversation if doesn't exist
         $this->conn->begin_transaction();
         try {
-            $sql = "INSERT INTO conversations (type) VALUES ('private')";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute();
+            // Create conversation
+            $conversationData = [
+                'name' => 'Private Conversation',
+                'type' => 'private'
+            ];
+            $conversationModel->create($conversationData);
             $conversationId = $this->conn->insert_id;
 
-            $sql = "INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("ii", $conversationId, $userId1);
-            $stmt->execute();
-            $stmt->bind_param("ii", $conversationId, $userId2);
-            $stmt->execute();
+            // Add participants
+            $conversationModel->addParticipant($conversationId, $userId1);
+            $conversationModel->addParticipant($conversationId, $userId2);
 
             $this->conn->commit();
             return $conversationId;
@@ -225,6 +230,14 @@ class User extends BaseModel
         $stmt->bind_param("is", $userId, $sessionToken);
         $stmt->execute();
         return $stmt->get_result()->num_rows > 0;
+    }
+
+    public function getAllUsers() {
+        $sql = "SELECT * FROM {$this->table} ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     protected function handleError($message) {
