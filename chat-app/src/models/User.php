@@ -20,16 +20,16 @@ class User extends BaseModel
 
     /**
      * Crée un nouvel utilisateur
-     * @param array $userData Données de l'utilisateur (username, name, email, password, etc.)
+     * @param array $userData Données de l'utilisateur (username, name, email, password, avatar_url, bio, status)
      * @return bool Succès de la création
      */
     public function create(array $userData)
     {
         $userData['password'] = password_hash($userData['password'], PASSWORD_DEFAULT);
         
-        $sql = "INSERT INTO {$this->table} (username, name, email, password) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO {$this->table} (username, name, email, password, avatar_url, bio, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ssss", $userData['username'], $userData['name'], $userData['email'], $userData['password']);
+        $stmt->bind_param("sssssss", $userData['username'], $userData['name'], $userData['email'], $userData['password'], $userData['avatar_url'], $userData['bio'], $userData['status']);
         return $stmt->execute();
     }
 

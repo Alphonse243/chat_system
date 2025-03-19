@@ -59,9 +59,9 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             <hr>
                             <div class="d-grid">
-                                <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                <a href="register.php" type="button" class="btn btn-success btn-lg" >
                                     Create New Account
-                                </button>
+                                </a>
                             </div>
                         </form>
                     </div>
