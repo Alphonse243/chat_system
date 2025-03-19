@@ -1,5 +1,7 @@
 <?php
 session_start();
+use ChatApp\Controllers\NavigationController;
+
 require_once __DIR__ . '/controllers/NavigationController.php';
 $navController = new NavigationController();
 $translator = $navController->getTranslator();
@@ -81,10 +83,9 @@ if (isset($_SESSION['user_id'])) {
                     'Accept': 'application/json'
                 }
             })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Server response was not JSON');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
@@ -110,10 +111,14 @@ if (isset($_SESSION['user_id'])) {
             })
             .catch(error => {
                 console.error('Error:', error);
+                let message = 'Server error. Please try again later.';
+                if (error instanceof SyntaxError) {
+                    message = 'Failed to parse server response.';
+                }
                 const alertDiv = document.createElement('div');
                 alertDiv.className = 'alert alert-danger mt-3';
                 alertDiv.role = 'alert';
-                alertDiv.textContent = 'Server error. Please try again later.';
+                alertDiv.textContent = message;
                 
                 const form = document.getElementById('loginForm');
                 const existingAlert = form.querySelector('.alert');

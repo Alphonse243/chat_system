@@ -8,9 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ .'/../backend/config/database.php';
 require_once __DIR__ . '/models/User.php';
 
+use ChatApp\Models\User;
+use ChatApp\Controllers\NavigationController;
+
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
-$userModel = new User($db);
+$userModel = new ChatApp\Models\User($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
     

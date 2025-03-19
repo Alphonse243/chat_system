@@ -1,9 +1,14 @@
 <?php
+
+namespace ChatApp\Models;
+
+require_once __DIR__ . '/BaseModel.php';
+
 /**
  * Modèle de gestion des conversations
  * Gère les conversations privées et de groupe
  */
-class Conversation {
+class Conversation extends BaseModel {
     protected $conn;
     protected $table = 'conversations';
 
@@ -15,7 +20,7 @@ class Conversation {
     }
 
     
-    protected function checkTable() {
+    public function checkTable() {
         $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
         return $result->num_rows > 0;
     }

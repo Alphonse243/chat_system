@@ -1,4 +1,7 @@
 <?php
+
+namespace ChatApp\Core;
+
 /**
  * Classe Translator
  * Gère le système de traduction multilingue de l'application

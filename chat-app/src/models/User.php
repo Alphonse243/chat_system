@@ -1,9 +1,14 @@
 <?php
+
+namespace ChatApp\Models;
+
+require_once __DIR__ . '/BaseModel.php';
+
 /**
  * Modèle de gestion des utilisateurs
  * Gère toutes les opérations liées aux utilisateurs (CRUD, sessions, recherche)
  */
-class User {
+class User extends BaseModel {
     protected $conn;
     protected $table = 'users';
 
@@ -14,7 +19,11 @@ class User {
         }
     }
 
-    protected function checkTable() {
+    /**
+     * Vérifie l'existence de la table dans la base de données
+     * @return bool True si la table existe, false sinon
+     */
+    public function checkTable() {
         $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
         return $result->num_rows > 0;
     }

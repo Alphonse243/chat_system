@@ -1,6 +1,11 @@
 <?php
 session_start();
+use ChatApp\Controllers\NavigationController;
+use ChatApp\Models\User;
+
 require_once __DIR__ . '/controllers/NavigationController.php';
+require_once __DIR__ . '/models/User.php'; // Redundant include
+
 $navController = new NavigationController();
 $translator = $navController->getTranslator();
 
@@ -10,11 +15,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once __DIR__ .'/../backend/config/database.php';
-require_once __DIR__ . '/models/User.php';
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
-$userModel = new User($db);
+$userModel = new ChatApp\Models\User($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 
 if (!$currentUser) {
@@ -273,7 +277,7 @@ if (!$currentUser) {
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>
     <script src="js/profile.js"></script>
-    <script>
+    <script> // Revert removal of DOMContentLoaded listener
         document.addEventListener('DOMContentLoaded', function() {
             const elements = document.querySelectorAll('.fade-in');
             if (elements && elements.length > 0) {

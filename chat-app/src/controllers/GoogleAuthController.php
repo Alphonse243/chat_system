@@ -1,5 +1,10 @@
 <?php
+
+namespace ChatApp\Controllers;
+
 require_once __DIR__ . '/../../../vendor/autoload.php';
+
+use Exception;
 
 class GoogleAuthController {
     private $client;
@@ -16,7 +21,7 @@ class GoogleAuthController {
     }
 
     private function initGoogleClient() {
-        $this->client = new Google_Client();
+        $this->client = new \Google_Client();
         $this->client->setClientId($this->config['client_id']);
         $this->client->setClientSecret($this->config['client_secret']);
         $this->client->setRedirectUri($this->config['redirect_uri']);

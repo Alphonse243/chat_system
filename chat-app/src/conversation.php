@@ -13,12 +13,13 @@ use Carbon\Carbon;
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
-$userModel = new User($db);
-$conversationModel = new Conversation($db);
+$userModel = new ChatApp\Models\User($db);
+$conversationModel = new ChatApp\Models\Conversation($db);
 $currentConversation = $conversationModel->getMessages($_GET['conversationId']);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
 
+use ChatApp\Controllers\NavigationController;
 
     //// DEBUG
 // var_dump($currentConversation);
@@ -183,21 +184,28 @@ if (!$currentUser) {
                                 <span></span>
                             </div>
                         </div>
-                        <div class="input-group d-flex align-items-center">
-                            <input type="text" id="message-input" 
-                                   class="form-control rounded-pill me-2" 
-                                   data-i18n="type_message"
-                                   placeholder="<?= $translator->translate('type_message') ?>" 
-                                   style="background-color: #f0f2f0;">
+                        
+                        <form id="message-form" action="chat-app/src/controllers/MessageController.php" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
+                            <input type="hidden" name="conversation_id" value="<?php echo $_GET['conversationId']; ?>">
+                            <input type="hidden" name="message_type" id="message-type" value="text">
+                            <div class="input-group d-flex align-items-center">
+                                <input type="text" id="message-input" name="content"
+                                       class="form-control rounded-pill me-2"
+                                       data-i18n="type_message"
+                                       placeholder="<?= $translator->translate('type_message') ?>"
+                                       style="background-color: #f0f2f0;">
                             
-                            <!-- Bouton Micro/Envoi -->
-                            <button id="record-button" class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('record_voice') ?>">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                            <button id="send-button" class="btn btn-primary rounded-circle" title="<?= $translator->translate('send') ?>" style="display:none;">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
+                                <!-- Bouton Micro/Envoi -->
+                                <button id="record-button" class="btn btn-light rounded-circle me-2" type="button" title="<?= $translator->translate('record_voice') ?>">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button id="send-button" class="btn btn-primary rounded-circle" type="submit" title="<?= $translator->translate('send') ?>" style="display:none;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                <input type="file" id="audio-file" name="audio" style="display: none;">
+                            </div>
+                        </form>
+                        
                         <div id="recording-indicator" class="d-none align-items-center mt-2">
                             <i class="fas fa-circle text-danger me-1"></i>
                             <span><?= $translator->translate('recording') ?>...</span>
@@ -240,8 +248,29 @@ if (!$currentUser) {
 
                     mediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        sendVoiceMessage(audioBlob);
+                        // const audioUrl = URL.createObjectURL(audioBlob);
+                        // sendVoiceMessage(audioBlob);
+                        
+                        // Set message type to voice
+                        $('#message-type').val('voice');
+
+                        // Create a file from the audio blob
+                        const audioFile = new File([audioBlob], "voice.webm", { type: "audio/webm" });
+
+                        // Create a new DataTransfer object
+                        const dataTransfer = new DataTransfer();
+
+                        // Add the file to the DataTransfer object
+                        dataTransfer.items.add(audioFile);
+
+                        // Get the file input element
+                        const fileInput = document.getElementById('audio-file');
+
+                        // Set the files property of the file input element to the DataTransfer object's files
+                        fileInput.files = dataTransfer.files;
+
+                        // Submit the form
+                        $('#message-form').submit();
                     };
 
                     mediaRecorder.start();
@@ -275,50 +304,6 @@ if (!$currentUser) {
                 }
             }
 
-            function sendVoiceMessage(audioBlob) {
-                let formData = new FormData();
-                formData.append('audio', audioBlob, 'voice.webm');
-                formData.append('conversation_id', '<?php echo $_GET['conversationId']; ?>');
-
-                $.ajax({
-                    url: '../backend/controllers/MessageController.php',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        console.log("Réponse du serveur :", response);
-                        location.reload();
-                    },
-                    error: function(error) {
-                        console.error("Erreur lors de l'envoi du message vocal :", error);
-                    }
-                });
-            }
-
-            $('#send-button').click(function() {
-                const messageText = $('#message-input').val();
-                if (messageText.trim() !== '') {
-                    $.ajax({
-                        url: '../backend/controllers/MessageController.php',
-                        type: 'POST',
-                        data: {
-                            content: messageText,
-                            conversation_id: '<?php echo $_GET['conversationId']; ?>',
-                            message_type: 'text'
-                        },
-                        success: function(response) {
-                            console.log("Message envoyé :", response);
-                            $('#message-input').val('');
-                            location.reload();
-                        },
-                        error: function(error) {
-                            console.error("Erreur lors de l'envoi du message :", error);
-                        }
-                    });
-                }
-            });
-
             $('#message-input').on('input', function() {
                 if ($(this).val().trim() !== '') {
                     $('#record-button').hide();
@@ -327,6 +312,14 @@ if (!$currentUser) {
                     $('#record-button').show();
                     $('#send-button').hide();
                 }
+            });
+
+            // Prevent the form from submitting multiple times
+            $('#message-form').submit(function() {
+                $(this).submit(function() {
+                    return false;
+                });
+                return true;
             });
         });
     </script>

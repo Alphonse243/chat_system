@@ -1,4 +1,8 @@
 <?php
+namespace ChatApp\Controllers;
+
+use ChatApp\Core\Translator;
+
 require_once __DIR__ . '/../core/Translator.php';
 
 /**

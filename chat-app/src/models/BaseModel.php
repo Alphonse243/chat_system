@@ -1,4 +1,7 @@
 <?php
+
+namespace ChatApp\Models;
+
 /**
  * Classe de base abstraite pour tous les modèles
  * Fournit les fonctionnalités communes à tous les modèles

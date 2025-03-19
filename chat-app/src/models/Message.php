@@ -1,4 +1,7 @@
 <?php
+
+namespace ChatApp\Models;
+
 /**
  * Modèle de gestion des messages
  * 
