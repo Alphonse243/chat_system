@@ -1,75 +1,126 @@
-# README.md for Chat Application
-
 # Chat Application
 
-Application de chat moderne avec support multilingue
+Application de chat moderne avec support multilingue et fonctionnalités avancées.
 
-## Fonctionnalités
+## Architecture du Projet
 
-### Système de Traduction Multilingue
+### 1. Frontend (/chat-app/src/)
+- **Views**: Templates PHP pour le rendu des pages
+- **CSS**: Styles modulaires (style.css, navbar.css, login.css)
+- **JavaScript**: Scripts interactifs (app.js, languageManager.js, profile.js)
+- **Controllers**: Gestion de la logique (AuthController, NavigationController, MessageController)
+- **Models**: Modèles de données (User, Message, Conversation)
 
-Le système de traduction permet de :
-- Gérer plusieurs langues (FR, EN, ES, ZH, SW)
-- Changer de langue dynamiquement sans rechargement
-- Stocker la préférence de langue en session
-- Traduire l'interface utilisateur complète
+### 2. Backend
+- Base de données MySQL relationnelle
+- API endpoints sécurisés
+- Gestion des sessions utilisateur
+- Système de sécurité robuste
 
-## Features
+## Fonctionnalités Principales
 
-- Real-time messaging
-- User-friendly interface
-- Responsive design
-- Easy to customize
-- Multilingual Translation System
-- Voice Messaging
-- Profile Update
+### 1. Système d'Authentification
+- Login/Register traditionnels
+- Intégration Google Sign-In
+- Gestion des sessions sécurisées
+- Protection contre les attaques courantes
 
-## Project Structure
+### 2. Messagerie en Temps Réel
+- Support des messages texte
+- Messagerie vocale intégrée
+- Indicateurs de statut utilisateur
+- Avatars dynamiques (API DiceBear)
+- Historique des conversations
+- Notifications en temps réel
 
-```
-chat-app
-├── src
-│   ├── index.html        # Main HTML document
-│   ├── css
-│   │   └── style.css     # Styles for the application
-│   ├── js
-│   │   └── app.js        # JavaScript code for functionality
-│   └── assets            # Directory for additional assets
-├── package.json          # npm configuration file
-└── README.md             # Project documentation
-```
+### 3. Internationalisation (i18n)
+- Support de multiple langues
+  - Français (FR)
+  - Anglais (EN)
+  - Espagnol (ES)
+  - Chinois (ZH)
+  - Swahili (SW)
+- Changement de langue dynamique sans rechargement
+- Système de traduction extensible
+
+### 4. Interface Utilisateur
+- Design responsive (Bootstrap)
+- Animations et transitions fluides
+- Thème moderne inspiré de WhatsApp/Facebook
+- Mode sombre/clair
+- Interface intuitive
+
+### 5. Fonctionnalités Sociales
+- Profils utilisateurs personnalisables
+- Gestion des contacts et amis
+- Statuts d'activité
+- Partage de médias
+
+## Structure Technique
+
+### Base de Données
+- Tables principales:
+  - users
+  - conversations
+  - messages
+  - conversation_participants
+  - message_status
+  - attachments
+  - user_sessions
+
+### Sécurité
+- Préparation des requêtes SQL
+- Validation des entrées
+- Protection XSS
+- Gestion des sessions sécurisée
+- Encryption des mots de passe
+
+### Performance
+- Mise en cache optimisée
+- Requêtes SQL optimisées
+- Chargement asynchrone
+- Pagination des résultats
 
 ## Installation
 
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-2. Navigate to the project directory:
-   ```
-   cd chat-app
-   ```
-3. Install dependencies:
-   ```
-   npm install
-   ```
+1. Cloner le repository:
+```bash
+git clone [url-du-repo]
+```
 
-## Usage
+2. Configuration de la base de données:
+```bash
+cd backend
+mysql -u root -p < init.sql
+```
 
-To run the chat application, open `src/index.html` in your web browser. You can also set up a local server for a better experience.
+3. Installation des dépendances:
+```bash
+composer install
+```
 
-## Contributing
+4. Configuration:
+- Copier `.env.example` vers `.env`
+- Configurer les variables d'environnement
 
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
+## Développement
 
-## Dependencies
+### Prérequis
+- PHP 7.4+
+- MySQL 5.7+
+- Composer
+- Node.js (pour le développement frontend)
 
--   PHP 7.4+
--   MySQL
--   Composer
--   fakerphp/faker
--   Carbon
+### Technologies Utilisées
+- Backend:
+  - PHP
+  - MySQL
+  - Composer
+- Frontend:
+  - HTML5/CSS3
+  - JavaScript (ES6+)
+  - Bootstrap 5
+  - Font Awesome
 
-## License
-
-This project is licensed under the MIT License.
+## Licence
+Ce projet est sous licence MIT.
