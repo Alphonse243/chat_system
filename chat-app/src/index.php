@@ -161,6 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <?php
                                 $users = $userModel->getAllUsers();
                                 foreach($users as $user){
+                                    if ($user['id'] != $_SESSION['user_id']) { // Ne pas afficher l'utilisateur actuel
                                     ?>       
                                         <div class="btn btn-primary d-flex align-items-center mb-3">
                                             <div class="avatar-container">
@@ -172,10 +173,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <div>
                                                 <div class="fw-bold text-white d-flex "><?= $user['username'] ?>  </div>
                                                 <small class="text-white"><?= $user['email'] ?></small>
-                                                <a href="create_conversation.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-light">Create Conversation</a>
+                                                <div class="mt-2">
+                                                    <a href="conversation.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-light me-2">Create Conversation</a>
+                                                    <a href="view_profile.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-info">View Profile</a>
+                                                </div>
                                             </div>
                                         </div>
                                     <?php
+                                    }
                                 }
                             ?>
                         </ul>

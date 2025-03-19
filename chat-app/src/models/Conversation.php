@@ -125,4 +125,39 @@ class Conversation extends BaseModel
         $result = $stmt->get_result();
         return $result->fetch_assoc();
     }
+
+    public function getConversationBetweenUsers(int $user1Id, int $user2Id) {
+        // First, try to find an existing private conversation between these users
+        $sql = "SELECT c.id 
+                FROM conversations c
+                JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
+                JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
+                WHERE c.type = 'private'
+                AND cp1.user_id = ?
+                AND cp2.user_id = ?
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $user1Id, $user2Id);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        
+        if ($result) {
+            return $result['id'];
+        }
+        
+        // If no conversation exists, create a new one
+        $this->create([
+            'name' => 'Private Conversation',
+            'type' => 'private'
+        ]);
+        
+        $conversationId = $this->conn->insert_id;
+        
+        // Add both users as participants
+        $this->addParticipant($conversationId, $user1Id);
+        $this->addParticipant($conversationId, $user2Id);
+        
+        return $conversationId;
+    }
 }
