@@ -20,6 +20,9 @@ Le système de traduction permet de :
 - User-friendly interface
 - Responsive design
 - Easy to customize
+- Multilingual Translation System
+- Voice Messaging
+- Profile Update
 
 ## Project Structure
 
@@ -58,6 +61,14 @@ To run the chat application, open `src/index.html` in your web browser. You can 
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
+
+## Dependencies
+
+-   PHP 7.4+
+-   MySQL
+-   Composer
+-   fakerphp/faker
+-   Carbon
 
 ## License
 
