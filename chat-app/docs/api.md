@@ -280,6 +280,7 @@ Content-Type: application/json
 -   Composer
 -   fakerphp/faker
 -   Carbon
+-   Eloquent ORM
 
 ## Integration Example
 
