@@ -205,8 +205,26 @@ if (!$currentUser) {
 
     <div class="container-fluid px-4">
         <div class="text-center col-lg-6 mx-auto mb-4 fade-in">
-            <h1 class="mb-1 mt-5"><?= htmlspecialchars($currentUser['username']) ?></h1>
-            <p class="text-muted"><?= htmlspecialchars($currentUser['bio']) ?></p>
+        <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <!-- Avatar -->
+                        <div class="mb-4">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($currentUser['username']) ?>" 
+                                class="rounded-circle img-thumbnail"
+                                alt="<?= htmlspecialchars($currentUser['username']) ?>"
+                                style="width: 150px; height: 150px;">
+                        </div>
+                        
+                        <!-- User Info -->
+                        <h4 class="card-title"><?= htmlspecialchars($currentUser['username']) ?></h4>
+                        <p class="text-muted"><?= htmlspecialchars($currentUser['email']) ?></p>
+                        
+                        <!-- Profile Form -->
+                        <form method="post" action="controllers/ProfileController.php">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <ul class="nav profile-nav justify-content-center mb-4 fade-in" style="--delay: 0.2s">
@@ -245,11 +263,16 @@ if (!$currentUser) {
                 <div class="profile-section">
                     <h2 class="section-title"><?= $translator->translate('Friends') ?></h2>
                     <div class="friends-grid">
-                        <?php for($i = 1; $i <= 4; $i++): ?>
+                        <?php 
+                        // Liste de noms d'amis fictifs pour la démo
+                        $friends = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'];
+                        foreach($friends as $friend): ?>
                         <div class="friend-item">
-                            <img src="https://ui-avatars.com/api/?name=Friend+<?= $i ?>" alt="Friend <?= $i ?>">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($friend) ?>" 
+                                 alt="<?= htmlspecialchars($friend) ?>"
+                                 title="<?= htmlspecialchars($friend) ?>">
                         </div>
-                        <?php endfor; ?>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>

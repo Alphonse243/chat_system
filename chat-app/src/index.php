@@ -8,14 +8,17 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ .'/../backend/config/database.php';
 require_once __DIR__ . '/models/User.php';
 require_once __DIR__ . '/models/Message.php';
+require_once __DIR__ . '/models/Conversation.php';
 use ChatApp\Models\User;
-use ChatApp\Controllers\NavigationController;
 use ChatApp\Models\Message;
+use ChatApp\Models\Conversation;
+use ChatApp\Controllers\NavigationController;
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
 $userModel = new User($db);
-$messageModel = new Message($db); // Instantiate the Message model
+$messageModel = new Message($db);
+$conversationModel = new Conversation($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
     
@@ -49,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    
 </head>
 <body style="background-color: #f0f2f5;">
     <?php
@@ -69,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="card-body p-0">
                         <div class="current-user mb-3 p-3 border-bottom ">
                             <div class="d-flex align-items-center">
-                                <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($currentUser['username']) ?>" 
                                      class="avatar me-2" 
                                      alt="<?= htmlspecialchars($currentUser['username']) ?>">
                                 <div>
@@ -82,14 +86,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <!-- La liste des conversation privée sera générée dynamiquement -->
                             <?php
                                 foreach($getConversations as $item){
+                                    // Récupérer l'autre participant de la conversation
+                                    $otherParticipant = $conversationModel->getOtherParticipant($item['conversations_id'], $_SESSION['user_id']);
+                                    $participantName = $otherParticipant ? htmlspecialchars($otherParticipant['username']) : 'Conversation';
                                     ?>  
                                     <a href="conversation.php?conversationId=<?= htmlspecialchars($item['conversations_id']) ?>">
                                         <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                            <img src="<?= htmlspecialchars($currentUser['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser['username'])) ?>" 
+                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($participantName) ?>" 
                                                 class="avatar me-2" 
-                                                alt="<?= htmlspecialchars($item['conversations_name']) ?>">
+                                                alt="<?= $participantName ?>">
                                             <div>
-                                                <div class="fw-bold text-white d-flex "><?= $item['conversations_name'] ?> <?= $item['conversations_type'] ?>  </div>
+                                                <div class="fw-bold text-white d-flex "><?= $participantName ?></div>
                                                 <small class=" text-white  ">Last message de la conversation,......</small>
                                             </div>
                                         </div>
@@ -114,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 foreach($users as $user){
                                     ?>       
                                         <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                            <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username'])) ?>" 
+                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($user['username']) ?>" 
                                                 class="avatar me-2" 
                                                 alt="<?= htmlspecialchars($user['username']) ?>">
                                             <div>
@@ -133,6 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     <!-- Scripts -->
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>

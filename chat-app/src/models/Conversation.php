@@ -98,4 +98,17 @@ class Conversation extends BaseModel
         $stmt->bind_param("ii", $conversationId, $userId);
         return $stmt->execute();
     }
+
+    public function getOtherParticipant($conversationId, $currentUserId) {
+        $sql = "SELECT u.username, u.id
+                FROM users u
+                JOIN conversation_participants cp ON u.id = cp.user_id
+                WHERE cp.conversation_id = ? AND u.id != ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $conversationId, $currentUserId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
 }

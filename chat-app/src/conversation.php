@@ -16,6 +16,7 @@ $db = Database::getInstance()->getConnection();
 $userModel = new ChatApp\Models\User($db);
 $conversationModel = new ChatApp\Models\Conversation($db); // Pass the database connection
 $currentConversation = $conversationModel->getMessages($_GET['conversationId']);
+$otherParticipant = $conversationModel->getOtherParticipant($_GET['conversationId'], $_SESSION['user_id']);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
 
@@ -121,7 +122,12 @@ if (!$currentUser) {
             <div class="col-md-9">
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($currentUser['username']) ?></h6>
+                        <div class="d-flex align-items-center">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
+                                class="avatar me-2" 
+                                alt="<?= htmlspecialchars($otherParticipant['username']) ?>">
+                            <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($otherParticipant['username']) ?></h6>
+                        </div>
                         <div class="d-flex align-items-center">
                             <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('phone') ?>"><i class="fas fa-phone"></i></button>
                             <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('video') ?>"><i class="fas fa-video"></i></button>
@@ -148,7 +154,9 @@ if (!$currentUser) {
                                 ?> 
                                     <div class="message <?= $positionMessage ?> ">
                                         <div class="d-flex align-items-start">
-                                            <img src="https://ui-avatars.com/api/?name=John+Doe" class="avatar me-2" alt="John">
+                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($name) ?>" 
+                                                class="avatar me-2" 
+                                                alt="<?= htmlspecialchars($name) ?>">
                                             <div class="message-content">
                                                 <div class="fw-bold <?= $design ?> mb-1"> <?= $name ?> </div>
                                                 <?php if ($item['message_type'] == 'image'): ?>
