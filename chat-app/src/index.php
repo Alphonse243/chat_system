@@ -13,10 +13,7 @@ $db = Database::getInstance()->getConnection();
 $userModel = new User($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
-    //// DEBUG
-// var_dump($currentUser);
-// die();
-
+    
 if (!$currentUser) {
     session_destroy();
     header('Location: login.php');

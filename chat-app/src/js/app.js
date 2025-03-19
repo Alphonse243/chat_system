@@ -1,30 +1,71 @@
 // app.js
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const messagesContainer = document.getElementById('messages');
+    const typingIndicator = document.getElementById('typing-indicator');
 
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', function(e) {
-        if (e.which === 13) sendMessage();
-    });
+    if (sendButton && messageInput && messagesContainer && typingIndicator) {
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
 
-    function sendMessage() {
-        const message = messageInput.value.trim();
-        if (!message) return;
+        messageInput.addEventListener('input', function () {
+            if (messageInput.value.length > 0) {
+                showTypingIndicator();
+            } else {
+                hideTypingIndicator();
+            }
+        });
 
-        const messageHtml = `
-            <div class="message sent">
-                <div class="message-content">
-                    <div class="message-text">${message}</div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                </div>
-            </div>
-        `;
+        function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (messageText !== '') {
+                // Create message element
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', 'sent');
 
-        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
-        messageInput.value = '';
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                const messageContentDiv = document.createElement('div');
+                messageContentDiv.classList.add('message-content');
+
+                const messageTextDiv = document.createElement('div');
+                messageTextDiv.classList.add('message-text');
+                messageTextDiv.textContent = messageText;
+
+                const messageTimeDiv = document.createElement('div');
+                messageTimeDiv.classList.add('message-time');
+                const now = new Date();
+                messageTimeDiv.textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                messageContentDiv.appendChild(messageTextDiv);
+                messageContentDiv.appendChild(messageTimeDiv);
+                messageDiv.appendChild(messageContentDiv);
+
+                messagesContainer.appendChild(messageDiv);
+
+                // Clear input
+                messageInput.value = '';
+
+                // Hide typing indicator
+                hideTypingIndicator();
+
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.classList.remove('d-none');
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.classList.add('d-none');
+        }
+    } else {
+        console.error('One or more elements not found.');
     }
 });
