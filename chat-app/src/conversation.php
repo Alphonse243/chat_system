@@ -40,7 +40,7 @@ if (!$currentUser) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body style="background-color: #f0f2f5;">
+<body>
     <?php
     require_once __DIR__ . '/controllers/NavigationController.php';
     $navController = new NavigationController();
@@ -56,9 +56,9 @@ if (!$currentUser) {
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($currentUser['username']) ?></h6>
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-light rounded-circle me-2"><i class="fas fa-phone"></i></button>
-                            <button class="btn btn-light rounded-circle me-2"><i class="fas fa-video"></i></button>
-                            <button class="btn btn-light rounded-circle"><i class="fas fa-info-circle"></i></button>
+                            <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('phone') ?>"><i class="fas fa-phone"></i></button>
+                            <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('video') ?>"><i class="fas fa-video"></i></button>
+                            <button class="btn btn-light rounded-circle" title="<?= $translator->translate('info') ?>"><i class="fas fa-info-circle"></i></button>
                         </div>
                     </div> 
                     <div class="card-body bg-white">
@@ -106,7 +106,7 @@ if (!$currentUser) {
                                    data-i18n="type_message"
                                    placeholder="<?= $translator->translate('type_message') ?>" 
                                    style="background-color: #f0f2f5;">
-                            <button id="send-button" class="btn btn-primary rounded-circle"><i class="fas fa-paper-plane"></i></button>
+                            <button id="send-button" class="btn btn-primary rounded-circle" title="<?= $translator->translate('send') ?>"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
