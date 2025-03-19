@@ -13,7 +13,7 @@ use ChatApp\Controllers\NavigationController;
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
-$userModel = new ChatApp\Models\User($db);
+$userModel = new User($db); // Pass the database connection to the User model
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
     

@@ -2,57 +2,49 @@
 
 namespace ChatApp\Models;
 
-require_once __DIR__ . '/BaseModel.php';
-
 /**
  * Modèle de gestion des conversations
  * Gère les conversations privées et de groupe
  */
 class Conversation extends BaseModel {
-    protected $conn;
     protected $table = 'conversations';
+    protected $primaryKey = 'id';
+    public $timestamps = false;
 
-    public function __construct($db) { 
-        $this->conn = $db;
-        if (!$this->checkTable()) {
-            throw new Exception("conversations table not found");
-        }
+    public function __construct($db) {
+        parent::__construct($db, $this->table);
     }
-
-    
-    public function checkTable() {
-        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
-        return $result->num_rows > 0;
-    }
-
 
     /**
      * Crée une nouvelle conversation
-     * @param string|null $name Nom de la conversation (pour les groupes)
-     * @param string $type Type de conversation ('private' ou 'group')
-     * @return int|false ID de la conversation ou false si échec
+     * @param string|null $name Nom de la conversation (peut être null)
+     * @param string $type Type de la conversation (private, group, etc.)
+     * @return bool Succès de la création
      */
-    public function create($name = null, $type = 'private') {
-        $sql = "INSERT INTO conversations (name, type) VALUES (?, ?)";
+    public function create(?string $name, string $type)
+    {
+        $sql = "INSERT INTO {$this->table} (name, type) VALUES (?, ?)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ss", $name, $type);
-        return $stmt->execute() ? $this->conn->insert_id : false;
+        return $stmt->execute();
     }
 
     /**
      * Ajoute un participant à une conversation
      * @param int $conversationId ID de la conversation
-     * @param int $userId ID de l'utilisateur
-     * @param string $role Rôle du participant ('admin' ou 'member')
+     * @param int $userId ID de l'utilisateur à ajouter
+     * @return bool Succès de l'ajout
      */
-    public function addParticipant($conversationId, $userId, $role = 'member') {
-        $sql = "INSERT INTO conversation_participants (conversation_id, user_id, role) VALUES (?, ?, ?)";
+    public function addParticipant(int $conversationId, int $userId)
+    {
+        $sql = "INSERT INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iis", $conversationId, $userId, $role);
+        $stmt->bind_param("ii", $conversationId, $userId);
         return $stmt->execute();
     }
 
-    public function getParticipants($conversationId) {
+    public function getParticipants(int $conversationId)
+    {
         $sql = "SELECT u.* FROM users u 
                 INNER JOIN conversation_participants cp ON u.id = cp.user_id 
                 WHERE cp.conversation_id = ?";
@@ -62,14 +54,35 @@ class Conversation extends BaseModel {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getMessages($conversationId, $limit = 50, $offset = 0) {
-        $sql = "SELECT m.*, u.username, u.avatar_url FROM messages m 
-                INNER JOIN users u ON m.sender_id = u.id 
-                WHERE m.conversation_id = ? 
-                ORDER BY m.created_at DESC LIMIT ? OFFSET ?";
+    /**
+     * Récupère les messages d'une conversation par son ID
+     * @param int $conversationId ID de la conversation
+     * @return array Liste des messages
+     */
+    public function getMessages(int $conversationId)
+    {
+        $sql = "SELECT m.*, u.username
+                FROM messages m
+                INNER JOIN users u ON m.sender_id = u.id
+                WHERE m.conversation_id = ?
+                ORDER BY m.created_at ASC";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iii", $conversationId, $limit, $offset);
+        $stmt->bind_param("i", $conversationId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Supprime un participant d'une conversation
+     * @param int $conversationId ID de la conversation
+     * @param int $userId ID de l'utilisateur à supprimer
+     * @return bool Succès de la suppression
+     */
+    public function removeParticipant(int $conversationId, int $userId)
+    {
+        $sql = "DELETE FROM conversation_participants WHERE conversation_id = ? AND user_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $conversationId, $userId);
+        return $stmt->execute();
     }
 }

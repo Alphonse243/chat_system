@@ -2,30 +2,20 @@
 
 namespace ChatApp\Models;
 
-require_once __DIR__ . '/BaseModel.php';
+require_once __DIR__ . '/BaseModel.php'; // Add this line
 
 /**
  * Modèle de gestion des utilisateurs
  * Gère toutes les opérations liées aux utilisateurs (CRUD, sessions, recherche)
  */
-class User extends BaseModel {
-    protected $conn;
+class User extends BaseModel
+{
     protected $table = 'users';
+    protected $primaryKey = 'id';
+    public $timestamps = false;
 
-    public function __construct($db) { 
-        $this->conn = $db;
-        if (!$this->checkTable()) {
-            throw new Exception("Users table not found");
-        }
-    }
-
-    /**
-     * Vérifie l'existence de la table dans la base de données
-     * @return bool True si la table existe, false sinon
-     */
-    public function checkTable() {
-        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
-        return $result->num_rows > 0;
+    public function __construct($db) {
+        parent::__construct($db, $this->table);
     }
 
     /**
@@ -33,18 +23,13 @@ class User extends BaseModel {
      * @param array $userData Données de l'utilisateur (username, name, email, password, etc.)
      * @return bool Succès de la création
      */
-    public function create($userData) {
-        $sql = "INSERT INTO users (username, name, email, password, avatar_url, bio) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+    public function create(array $userData)
+    {
+        $userData['password'] = password_hash($userData['password'], PASSWORD_DEFAULT);
+        
+        $sql = "INSERT INTO {$this->table} (username, name, email, password) VALUES (?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ssssss", 
-            $userData['username'], 
-            $userData['name'], 
-            $userData['email'], 
-            password_hash($userData['password'], PASSWORD_DEFAULT),
-            $userData['avatar_url'],
-            $userData['bio']
-        );
+        $stmt->bind_param("ssss", $userData['username'], $userData['name'], $userData['email'], $userData['password']);
         return $stmt->execute();
     }
 
@@ -53,13 +38,14 @@ class User extends BaseModel {
      * @param int $id ID de l'utilisateur
      * @return array|null Données de l'utilisateur
      */
-    public function getById($id) {
-        $sql = "SELECT id, username, name, email, avatar_url, bio, status, last_seen 
-                FROM users WHERE id = ?";
+    public function getById(int $id)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
     /**
@@ -68,9 +54,9 @@ class User extends BaseModel {
      * @param string $password Mot de passe de l'utilisateur
      * @return array|null Données de l'utilisateur si authentifié, sinon null
      */
-    public function authenticate($email, $password) {
-        $sql = "SELECT id, username, name, email, password, avatar_url, bio, status, last_seen 
-                FROM users WHERE email = ?";
+    public function authenticate(string $email, string $password)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE email = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -79,6 +65,7 @@ class User extends BaseModel {
         if ($user && password_verify($password, $user['password'])) {
             return $user;
         }
+
         return null;
     }
 
@@ -87,24 +74,13 @@ class User extends BaseModel {
      * @param string $email Email de l'utilisateur
      * @return array|null Données de l'utilisateur ou null si non trouvé
      */
-    public function findByEmail($email) {
-        $sql = "SELECT id, username, name, email, password, avatar_url, bio, status, last_seen 
-                FROM users WHERE email = ?";
-        try {
-            $stmt = $this->conn->prepare($sql);
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->conn->error);
-            }
-            $stmt->bind_param("s", $email);
-            if (!$stmt->execute()) {
-                throw new Exception("Execute failed: " . $stmt->error);
-            }
-            $result = $stmt->get_result();
-            return $result->fetch_assoc();
-        } catch (Exception $e) {
-            error_log("Database error in findByEmail: " . $e->getMessage());
-            throw $e;
-        }
+    public function findByEmail(string $email)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE email = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
     }
 
     /**
@@ -112,26 +88,19 @@ class User extends BaseModel {
      * @param int $userId ID de l'utilisateur
      * @param string $status Nouveau statut (online, offline, away, busy)
      */
-    public function updateStatus($userId, $status) {
-        $sql = "UPDATE users SET status = ?, last_seen = CURRENT_TIMESTAMP WHERE id = ?";
+    public function updateStatus(int $userId, string $status)
+    {
+        $sql = "UPDATE {$this->table} SET status = ?, last_seen = NOW() WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("si", $status, $userId);
         return $stmt->execute();
     }
 
-    // // Get user conversations
-    // public function getConversations($userId) {
-    //     $sql = "SELECT c.* FROM conversations c
-    //             INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
-    //             WHERE cp.user_id = ?";
-    //     $stmt = $this->conn->prepare($sql);
-    //     $stmt->bind_param("i", $userId);
-    //     $stmt->execute();
-    //     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    // }
-
-    // Get user conversations / private
-    public function getConversations($userId) {
+    /**
+     * Get user conversations / private
+     */
+    public function getConversations(int $userId)
+    {
         $sql = "SELECT
             c.id as conversations_id,
             c.name as conversations_name,
@@ -153,32 +122,9 @@ class User extends BaseModel {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // // Get user conversations
-    // public function getConversations($userId) {
-    //     $sql = "SELECT
-    //         c.id as conversations_id,
-    //         c.name as conversations_name,
-    //         c.type as conversations_type,
-    //         c.updated_at as conversations_updated_at,
-    //         u.id as users_id,
-    //         u.name as users_name,
-    //         u.status as users_statuts,
-    //         u.last_seen as users_last_seen,
-    //         u.avatar_url as users_avatar_url
-
-    //         FROM conversations c
-    //             INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
-    //             LEFT JOIN users u ON u.id = cp.user_id
-    //             WHERE cp.user_id = ? AND c.type = 'group'";
-    //     $stmt = $this->conn->prepare($sql);
-    //     $stmt->bind_param("i", $userId);
-    //     $stmt->execute();
-    //     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    // }
-
-
     // Send message
-    public function sendMessage($senderId, $conversationId, $content, $messageType = 'text') {
+    public function sendMessage(int $senderId, int $conversationId, string $content, string $messageType = 'text')
+    {
         $sql = "INSERT INTO messages (sender_id, conversation_id, content, message_type) 
                 VALUES (?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
@@ -187,7 +133,8 @@ class User extends BaseModel {
     }
 
     // Get unread messages
-    public function getUnreadMessages($userId) {
+    public function getUnreadMessages(int $userId)
+    {
         $sql = "SELECT m.* FROM messages m
                 INNER JOIN message_status ms ON m.id = ms.message_id
                 WHERE ms.user_id = ? AND ms.status = 'sent'";
@@ -198,7 +145,8 @@ class User extends BaseModel {
     }
 
     // Create or get private conversation
-    public function createPrivateConversation($userId1, $userId2) {
+    public function createPrivateConversation(int $userId1, int $userId2)
+    {
         // First check if conversation exists
         $sql = "SELECT c.id FROM conversations c
                 INNER JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
@@ -237,14 +185,16 @@ class User extends BaseModel {
         }
     }
 
-    public function updateProfile($userId, $data) {
+    public function updateProfile(int $userId, array $data)
+    {
         $sql = "UPDATE users SET name = ?, bio = ?, avatar_url = ? WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("sssi", $data['name'], $data['bio'], $data['avatar_url'], $userId);
         return $stmt->execute();
     }
 
-    public function searchUsers($searchTerm, $limit = 10) {
+    public function searchUsers(string $searchTerm, int $limit = 10)
+    {
         $searchTerm = "%$searchTerm%";
         $sql = "SELECT id, username, name, avatar_url, status 
                 FROM users 
@@ -256,7 +206,8 @@ class User extends BaseModel {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function createSession($userId, $ipAddress, $userAgent) {
+    public function createSession(int $userId, string $ipAddress, string $userAgent)
+    {
         $sessionToken = bin2hex(random_bytes(32));
         $sql = "INSERT INTO user_sessions (user_id, ip_address, user_agent, session_token) 
                 VALUES (?, ?, ?, ?)";
@@ -265,7 +216,8 @@ class User extends BaseModel {
         return $stmt->execute() ? $sessionToken : false;
     }
 
-    public function validateSession($userId, $sessionToken) {
+    public function validateSession(int $userId, string $sessionToken)
+    {
         $sql = "SELECT id FROM user_sessions 
                 WHERE user_id = ? AND session_token = ? 
                 AND last_activity > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
@@ -278,5 +230,15 @@ class User extends BaseModel {
     protected function handleError($message) {
         error_log($message);
         throw new Exception($message);
+    }
+
+    /**
+     * Define the relationship with conversations.
+     * This assumes you have a 'conversations' table and a foreign key relationship.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class, 'user_id');
     }
 }

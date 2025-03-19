@@ -2,79 +2,46 @@
 
 namespace ChatApp\Models;
 
+// require_once __DIR__ . '/BaseModel.php'; // Removed
+
 /**
  * Modèle de gestion des messages
- * 
- * Cette classe gère toutes les opérations CRUD liées aux messages dans le système de chat.
- * 
- * Fonctionnalités principales:
- * 1. Création de nouveaux messages avec support multi-format
- * 2. Gestion des statuts de lecture
- * 3. Modification des messages existants
- * 
- * Structure des messages:
- * - sender_id: ID de l'expéditeur
- * - conversation_id: ID de la conversation
- * - content: Contenu du message
- * - message_type: Type de message (text, image, file, voice)
- * - file_url: Lien vers le fichier si applicable
- * - is_edited: Indicateur si le message a été modifié
- * 
- * Gestion des statuts:
- * - Les statuts sont automatiquement créés pour tous les participants
- * - Le statut initial est 'sent'
- * - Les statuts peuvent évoluer vers 'delivered' et 'read'
+ * Gère toutes les opérations CRUD liées aux messages dans le système de chat.
  */
 class Message extends BaseModel {
-    protected $conn;
     protected $table = 'messages';
-
-    public function __construct($db) {
-        parent::__construct($db, 'messages');
-        if (!$this->checkTable()) {
-            $this->handleError("Messages table not found");
-        }
-    }
-
-    protected function checkTable() {
-        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
-        return $result->num_rows > 0;
-    }
+    public $timestamps = false;
 
     /**
      * Crée un nouveau message dans la conversation
-     * 
      * @param int $senderId ID de l'expéditeur
      * @param int $conversationId ID de la conversation
      * @param string $content Contenu du message
      * @param string $messageType Type de message (text, image, file, voice)
      * @param string|null $fileUrl URL du fichier si le type n'est pas 'text'
-     * 
-     * Processus:
-     * 1. Insertion du message dans la table messages
-     * 2. Création automatique des statuts pour tous les participants
-     * 3. Exclusion du créateur du message des statuts
+     * @return bool Succès de la création
      */
-    public function create($senderId, $conversationId, $content, $messageType = 'text', $fileUrl = null) {
-        $sql = "INSERT INTO messages (sender_id, conversation_id, content, message_type, file_url) 
-                VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iisss", $senderId, $conversationId, $content, $messageType, $fileUrl);
-        if($stmt->execute()) {
-            $messageId = $this->conn->insert_id;
-            $this->createMessageStatus($messageId, $conversationId);
-            return $messageId;
-        }
-        return false;
+    public function create(int $senderId, int $conversationId, string $content, string $messageType = 'text', string $fileUrl = null)
+    {
+        return static::query()->create([
+            'sender_id' => $senderId,
+            'conversation_id' => $conversationId,
+            'content' => $content,
+            'message_type' => $messageType,
+            'file_url' => $fileUrl,
+        ]);
     }
 
     /**
      * Crée les statuts initiaux pour un nouveau message
-     * 
-     * Crée automatiquement des entrées 'sent' pour tous les participants
-     * de la conversation, sauf l'expéditeur du message
+     * @param int $messageId ID du message
+     * @param int $conversationId ID de la conversation
+     * @return bool Succès de la création des statuts
      */
-    private function createMessageStatus($messageId, $conversationId) {
+    private function createMessageStatus(int $messageId, int $conversationId)
+    {
+        // This logic might need adjustment based on your exact requirements
+        // and the structure of your database tables.
         $sql = "INSERT INTO message_status (message_id, user_id, status) 
                 SELECT ?, user_id, 'sent' 
                 FROM conversation_participants 
@@ -88,9 +55,14 @@ class Message extends BaseModel {
  
     /**
      * Marque un message comme lu pour un utilisateur spécifique
-     * Met à jour le statut en 'read' et enregistre la date/heure de lecture
+     * @param int $messageId ID du message
+     * @param int $userId ID de l'utilisateur
+     * @return bool Succès de la mise à jour du statut
      */
-    public function markAsRead($messageId, $userId) {
+    public function markAsRead(int $messageId, int $userId)
+    {
+        // This logic might need adjustment based on your exact requirements
+        // and the structure of your database tables.
         $sql = "UPDATE message_status 
                 SET status = 'read', read_at = CURRENT_TIMESTAMP 
                 WHERE message_id = ? AND user_id = ?";
@@ -101,26 +73,33 @@ class Message extends BaseModel {
 
     /**
      * Modifie le contenu d'un message existant
-     * Met à jour le contenu et marque le message comme édité
+     * @param int $messageId ID du message
+     * @param string $content Nouveau contenu du message
+     * @return bool Succès de la modification
      */
-    public function edit($messageId, $content) {
-        $sql = "UPDATE messages SET content = ?, is_edited = TRUE 
-                WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("si", $content, $messageId);
-        return $stmt->execute();
+    public function edit(int $messageId, string $content)
+    {
+        $message = static::query()->find($messageId);
+
+        if ($message) {
+            $message->content = $content;
+            $message->is_edited = true;
+            return $message->save();
+        }
+
+        return false;
     }
 
     /**
      * Récupère les messages d'une conversation privée entre deux utilisateurs
-     * 
      * @param int $userId1 ID du premier utilisateur
      * @param int $userId2 ID du deuxième utilisateur
      * @param int $limit Nombre de messages à récupérer (optionnel)
      * @param int $offset Offset pour la pagination (optionnel)
      * @return array Messages de la conversation
      */
-    public function getPrivateMessages($userId1, $userId2, $limit = 50, $offset = 0) {
+    public function getPrivateMessages(int $userId1, int $userId2, int $limit = 50, int $offset = 0)
+    {
         $sql = "SELECT m.*, u.username as sender_name, u.avatar_url 
                 FROM messages m 
                 INNER JOIN users u ON m.sender_id = u.id

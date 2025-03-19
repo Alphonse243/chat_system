@@ -2,6 +2,9 @@
 
 namespace ChatApp\Models;
 
+//use Illuminate\Database\Eloquent\Model; // Remove Eloquent Model
+//require_once __DIR__ . '/../../backend/config/eloquent-bootstrap.php'; // Remove Eloquent bootstrap
+
 /**
  * Classe de base abstraite pour tous les modèles
  * Fournit les fonctionnalités communes à tous les modèles
@@ -38,6 +41,6 @@ abstract class BaseModel {
      * @throws Exception
      */
     protected function handleError($message) {
-        throw new Exception("Table {$this->tableName}: " . $message);
+        throw new \Exception("Table {$this->tableName}: " . $message);
     }
 }

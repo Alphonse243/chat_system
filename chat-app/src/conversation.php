@@ -14,7 +14,7 @@ use Carbon\Carbon;
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
 $userModel = new ChatApp\Models\User($db);
-$conversationModel = new ChatApp\Models\Conversation($db);
+$conversationModel = new ChatApp\Models\Conversation($db); // Pass the database connection
 $currentConversation = $conversationModel->getMessages($_GET['conversationId']);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
