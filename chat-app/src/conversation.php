@@ -75,17 +75,34 @@ if (!$currentUser) {
                                         $name = $item['username'];
                                         $design = '';
                                     }
-                                    $date = Carbon::createFromFormat('Y-m-d H:i:s', $item['updated_at']);
+                                    $messageCreatedAt = Carbon::parse($item['updated_at']);
                                     Carbon::setlocale('fr');
-                                    $FormattedDate = $date->translatedFormat('L d F Y') ;
+                                    $FormattedDate = $messageCreatedAt->translatedFormat('L d F Y') ;
                                 ?> 
                                     <div class="message <?= $positionMessage ?> ">
                                         <div class="d-flex align-items-start">
                                             <img src="https://ui-avatars.com/api/?name=John+Doe" class="avatar me-2" alt="John">
                                             <div class="message-content">
                                                 <div class="fw-bold <?= $design ?> mb-1"> <?= $name ?> </div>
-                                                <div class="message-text"><?= $item['content'] ?> 😊</div>
-                                                <div class="message-time"><?= ucfirst($FormattedDate) ?> </div> 
+                                                <?php if ($item['message_type'] == 'image'): ?>
+                                                    <!-- Affichage d'une image si le type de message est 'image' -->
+                                                    <img src="<?= htmlspecialchars($item['content']) ?>" alt="Image" width="200" class="img-thumbnail">
+                                                <?php elseif ($item['message_type'] == 'file'): ?>
+                                                    <!-- Affichage d'un lien de téléchargement si le type de message est 'file' -->
+                                                    <a href="<?= htmlspecialchars($item['content']) ?>" target="_blank" class="btn btn-outline-primary btn-sm">Télécharger le fichier</a>
+                                                <?php elseif ($item['message_type'] == 'voice'): ?>
+                                                    <!-- Affichage d'un lecteur audio si le type de message est 'voice' -->
+                                                    <audio controls class="w-100">
+                                                        <source src="<?= htmlspecialchars($item['content']) ?>" type="audio/ogg">
+                                                        <source src="<?= htmlspecialchars($item['content']) ?>" type="audio/mpeg">
+                                                        Votre navigateur ne supporte pas l'élément audio.
+                                                    </audio>
+                                                <?php else: ?>
+                                                    <!-- Affichage du texte du message par défaut -->
+                                                    <div class="message-text"><?= $item['content'] ?> 😊</div>
+                                                <?php endif; ?>
+                                                <!-- Affichage de la date et de l'heure du message -->
+                                                <div class="message-time"><?= ucfirst($FormattedDate) ?>  <?= $messageCreatedAt->diffForHumans() ?></div> 
                                             </div>
                                         </div>
                                     </div>
