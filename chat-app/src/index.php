@@ -52,7 +52,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    
+    <style>
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .status-online {
+            background-color: #31a24c;
+        }
+        .status-offline {
+            background-color: #ccc;
+        }
+    </style>
 </head>
 <body style="background-color: #f0f2f5;">
     <?php
@@ -89,15 +109,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     // Récupérer l'autre participant de la conversation
                                     $otherParticipant = $conversationModel->getOtherParticipant($item['conversations_id'], $_SESSION['user_id']);
                                     $participantName = $otherParticipant ? htmlspecialchars($otherParticipant['username']) : 'Conversation';
+                                    $lastMessage = $conversationModel->getLastMessage($item['conversations_id']);
+                                    
+                                    // Formater le message selon son type
+                                    $messagePreview = '';
+                                    if ($lastMessage) {
+                                        switch($lastMessage['message_type']) {
+                                            case 'image':
+                                                $messagePreview = '📷 Photo';
+                                                break;
+                                            case 'file':
+                                                $messagePreview = '📎 Fichier';
+                                                break;
+                                            case 'voice':
+                                                $messagePreview = '🎤 Message vocal';
+                                                break;
+                                            default:
+                                                $messagePreview = htmlspecialchars(substr($lastMessage['content'], 0, 30)) . (strlen($lastMessage['content']) > 30 ? '...' : '');
+                                        }
+                                    }
                                     ?>  
                                     <a href="conversation.php?conversationId=<?= htmlspecialchars($item['conversations_id']) ?>">
-                                        <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($participantName) ?>" 
-                                                class="avatar me-2" 
-                                                alt="<?= $participantName ?>">
+                                        <div class="btn btn-primary d-flex align-items-center mb-3">
+                                            <div class="avatar-container">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($participantName) ?>" 
+                                                    class="avatar me-2" 
+                                                    alt="<?= $participantName ?>">
+                                                <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                                            </div>
                                             <div>
-                                                <div class="fw-bold text-white d-flex "><?= $participantName ?></div>
-                                                <small class=" text-white  ">Last message de la conversation,......</small>
+                                                <div class="fw-bold text-white d-flex"><?= $participantName ?></div>
+                                                <small class="text-white"><?= $messagePreview ?: 'Aucun message' ?></small>
                                             </div>
                                         </div>
                                     </a>
@@ -120,13 +162,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $users = $userModel->getAllUsers();
                                 foreach($users as $user){
                                     ?>       
-                                        <div class=" btn btn-primary d-flex align-items-center mb-3">
-                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($user['username']) ?>" 
-                                                class="avatar me-2" 
-                                                alt="<?= htmlspecialchars($user['username']) ?>">
+                                        <div class="btn btn-primary d-flex align-items-center mb-3">
+                                            <div class="avatar-container">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($user['username']) ?>" 
+                                                    class="avatar me-2" 
+                                                    alt="<?= htmlspecialchars($user['username']) ?>">
+                                                <span class="status-indicator <?= $user['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                                            </div>
                                             <div>
                                                 <div class="fw-bold text-white d-flex "><?= $user['username'] ?>  </div>
-                                                <small class=" text-white  "><?= $user['email'] ?></small>
+                                                <small class="text-white"><?= $user['email'] ?></small>
                                                 <a href="create_conversation.php?user_id=<?= htmlspecialchars($user['id']) ?>" class="btn btn-sm btn-light">Create Conversation</a>
                                             </div>
                                         </div>
@@ -146,5 +191,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script type="module" src="js/languageManager.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-2.2.4.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.fade-in');
+            if (elements && elements.length > 0) {
+                elements.forEach(element => {
+                    if (element) {
+                        const delay = element.style.getPropertyValue('--delay') || '0s';
+                        element.style.animationDelay = delay;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

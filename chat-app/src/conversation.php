@@ -106,6 +106,25 @@ if (!$currentUser) {
             border-radius: 50%;
             margin-right: 5px;
         }
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .status-online {
+            background-color: #31a24c;
+        }
+        .status-offline {
+            background-color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -123,9 +142,12 @@ if (!$currentUser) {
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
-                                class="avatar me-2" 
-                                alt="<?= htmlspecialchars($otherParticipant['username']) ?>">
+                            <div class="avatar-container">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
+                                    class="avatar me-2" 
+                                    alt="<?= htmlspecialchars($otherParticipant['username']) ?>">
+                                <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                            </div>
                             <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($otherParticipant['username']) ?></h6>
                         </div>
                         <div class="d-flex align-items-center">
@@ -329,6 +351,18 @@ if (!$currentUser) {
                 });
                 return true;
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.fade-in');
+            if (elements && elements.length > 0) {
+                elements.forEach(element => {
+                    if (element) {
+                        const delay = element.style.getPropertyValue('--delay') || '0s';
+                        element.style.animationDelay = delay;
+                    }
+                });
+            }
         });
     </script>
 </body>

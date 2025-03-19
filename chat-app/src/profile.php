@@ -26,6 +26,11 @@ if (!$currentUser) {
     header('Location: login.php');
     exit;
 }
+
+// Après la connexion à la base de données, ajouter :
+$conversationModel = new ChatApp\Models\Conversation($db);
+$userConversations = $userModel->getConversations($_SESSION['user_id']);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -190,6 +195,25 @@ if (!$currentUser) {
             gap: 10px;
         }
 
+        .friend-item {
+            position: relative;
+        }
+        .status-indicator {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .status-online {
+            background-color: #31a24c;
+        }
+        .status-offline {
+            background-color: #ccc;
+        }
+
         .friend-item img {
             width: 100%;
             aspect-ratio: 1;
@@ -264,15 +288,26 @@ if (!$currentUser) {
                     <h2 class="section-title"><?= $translator->translate('Friends') ?></h2>
                     <div class="friends-grid">
                         <?php 
-                        // Liste de noms d'amis fictifs pour la démo
-                        $friends = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'];
-                        foreach($friends as $friend): ?>
+                        foreach($userConversations as $conv): 
+                            $otherParticipant = $conversationModel->getOtherParticipant($conv['conversations_id'], $_SESSION['user_id']);
+                            if($otherParticipant):
+                        ?>
                         <div class="friend-item">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($friend) ?>" 
-                                 alt="<?= htmlspecialchars($friend) ?>"
-                                 title="<?= htmlspecialchars($friend) ?>">
+                            <a href="conversation.php?conversationId=<?= htmlspecialchars($conv['conversations_id']) ?>" 
+                               class="text-decoration-none">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
+                                     alt="<?= htmlspecialchars($otherParticipant['username']) ?>"
+                                     title="<?= htmlspecialchars($otherParticipant['username']) ?>">
+                                <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                                <div class="text-center mt-2 text-dark">
+                                    <?= htmlspecialchars($otherParticipant['username']) ?>
+                                </div>
+                            </a>
                         </div>
-                        <?php endforeach; ?>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
                     </div>
                 </div>
             </div>

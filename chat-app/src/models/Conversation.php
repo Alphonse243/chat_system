@@ -100,13 +100,27 @@ class Conversation extends BaseModel
     }
 
     public function getOtherParticipant($conversationId, $currentUserId) {
-        $sql = "SELECT u.username, u.id
+        $sql = "SELECT u.username, u.id, u.status
                 FROM users u
                 JOIN conversation_participants cp ON u.id = cp.user_id
                 WHERE cp.conversation_id = ? AND u.id != ?";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ii", $conversationId, $currentUserId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    public function getLastMessage($conversationId) {
+        $sql = "SELECT m.content, m.message_type, m.created_at 
+                FROM messages m 
+                WHERE m.conversation_id = ? 
+                ORDER BY m.created_at DESC 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $conversationId);
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_assoc();
