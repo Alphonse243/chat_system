@@ -23,11 +23,19 @@
  * - Les statuts peuvent évoluer vers 'delivered' et 'read'
  */
 class Message extends BaseModel {
+    protected $conn;
+    protected $table = 'messages';
+
     public function __construct($db) {
         parent::__construct($db, 'messages');
         if (!$this->checkTable()) {
             $this->handleError("Messages table not found");
         }
+    }
+
+    protected function checkTable() {
+        $result = $this->conn->query("SHOW TABLES LIKE '{$this->table}'");
+        return $result->num_rows > 0;
     }
 
     /**
@@ -74,7 +82,7 @@ class Message extends BaseModel {
         $stmt->bind_param("iii", $messageId, $conversationId, $messageId);
         return $stmt->execute();
     }
-
+ 
     /**
      * Marque un message comme lu pour un utilisateur spécifique
      * Met à jour le statut en 'read' et enregistre la date/heure de lecture

@@ -8,6 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ .'/../backend/config/database.php';
 require_once __DIR__ . '/models/User.php';
 require_once __DIR__ . '/models/Conversation.php';
+require '../../vendor/autoload.php';
+use Carbon\Carbon;
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
@@ -61,24 +63,7 @@ if (!$currentUser) {
                     </div> 
                     <div class="card-body bg-white">
                         <div id="messages" class="messages-container mb-3" style="max-height: 500px; overflow-y: auto;">
-                            
-
-                            <div class="message sent">
-                                <div class="message-content">
-                                    <div class="message-text">Salut! Ça va bien, merci ! Et toi?</div>
-                                    <div class="message-time">10:04</div>
-                                </div>
-                            </div>
-                            
-                            <div class="message received">
-                                <div class="d-flex align-items-start">
-                                    <img src="https://ui-avatars.com/api/?name=John+Doe" class="avatar me-2" alt="John">
-                                    <div class="message-content">
-                                        <div class="message-text">Super bien! Tu as vu les dernières mises à jour? 🚀</div>
-                                        <div class="message-time">10:05</div>
-                                    </div>
-                                </div>
-                            </div>
+                        
                             <?php
                                 foreach($currentConversation as $item){
                                     if($item['sender_id'] == $_SESSION['user_id']){
@@ -90,6 +75,9 @@ if (!$currentUser) {
                                         $name = $item['username'];
                                         $design = '';
                                     }
+                                    $date = Carbon::createFromFormat('Y-m-d H:i:s', $item['updated_at']);
+                                    Carbon::setlocale('fr');
+                                    $FormattedDate = $date->translatedFormat('L d F Y') ;
                                 ?> 
                                     <div class="message <?= $positionMessage ?> ">
                                         <div class="d-flex align-items-start">
@@ -97,7 +85,7 @@ if (!$currentUser) {
                                             <div class="message-content">
                                                 <div class="fw-bold <?= $design ?> mb-1"> <?= $name ?> </div>
                                                 <div class="message-text"><?= $item['content'] ?> 😊</div>
-                                                <div class="message-time"> <?= $item['updated_at'] ?> </div> 
+                                                <div class="message-time"><?= ucfirst($FormattedDate) ?> </div> 
                                             </div>
                                         </div>
                                     </div>
