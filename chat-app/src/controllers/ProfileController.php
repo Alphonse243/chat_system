@@ -32,7 +32,7 @@ class ProfileController {
 
             try {
                 if ($this->userModel->updateProfile($_SESSION['user_id'], $updateData)) {
-                    $_SESSION['success_message'] = 'Profile updated successfully';
+                    $_SESSION['success_message'] = 'Profile mis en  jour avec success';
                 } else {
                     $_SESSION['error_message'] = 'Failed to update profile';
                 }

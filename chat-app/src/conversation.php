@@ -142,13 +142,16 @@ if (!$currentUser) {
                 <div class="card rounded-3 border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
+                         <a href="view_profile.php?user_id=<?= urlencode($otherParticipant['id']) ?>">
                             <div class="avatar-container">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
                                     class="avatar me-2" 
                                     alt="<?= htmlspecialchars($otherParticipant['username']) ?>">
                                 <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
                             </div>
+                         </a>
                             <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($otherParticipant['username']) ?></h6>
+                         
                         </div>
                         <div class="d-flex align-items-center">
                             <button id="start-call" class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('phone') ?>">
