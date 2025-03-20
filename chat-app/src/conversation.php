@@ -151,7 +151,17 @@ if (!$currentUser) {
                             <h6 class="mb-0 fw-bold" data-i18n="chat_room"><?= htmlspecialchars($otherParticipant['username']) ?></h6>
                         </div>
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('phone') ?>"><i class="fas fa-phone"></i></button>
+                            <button id="start-call" class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('phone') ?>">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                            <div id="call-status" class="d-none">
+                                <span class="badge bg-success me-2">Appel en cours</span>
+                                <button id="end-call" class="btn btn-danger btn-sm rounded-circle">
+                                    <i class="fas fa-phone-slash"></i>
+                                </button>
+                            </div>
+                            <audio id="remote-audio" autoplay></audio>
+                            <audio id="local-audio" muted autoplay></audio>
                             <button class="btn btn-light rounded-circle me-2" title="<?= $translator->translate('video') ?>"><i class="fas fa-video"></i></button>
                             <button class="btn btn-light rounded-circle" title="<?= $translator->translate('info') ?>"><i class="fas fa-info-circle"></i></button>
                         </div>
@@ -249,6 +259,164 @@ if (!$currentUser) {
     <!-- Scripts -->
     <script src="js/jquery-2.2.4.min.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="/chat-system/chat-app/public/js/callManager.js"></script>
+    <script>
+        $(document).ready(function() {
+            let ws = null;
+            let callManager = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            const reconnectInterval = 5000;
+            const currentUserId = <?= json_encode($_SESSION['user_id']) ?>;
+
+            function connectWebSocket() {
+                if (ws) {
+                    ws.close();
+                }
+
+                ws = new WebSocket('ws://localhost:8090');
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket Error:', error);
+                    $('#start-call').prop('disabled', true);
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(connectWebSocket, reconnectInterval);
+                        reconnectAttempts++;
+                    }
+                };
+
+                ws.onopen = function() {
+                    console.log('WebSocket Connected');
+                    // Envoyer l'ID de l'utilisateur après la connexion
+                    ws.send(JSON.stringify({
+                        type: 'identify',
+                        userId: currentUserId
+                    }));
+                    $('#start-call').prop('disabled', false);
+                    reconnectAttempts = 0;
+                    callManager = new CallManager(ws);
+                };
+
+                // Déplacer onmessage ici
+                ws.onmessage = async function(event) {
+                    console.log('WebSocket message received:', event.data);
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        switch(data.type) {
+                            case 'connection':
+                                console.log('Connection established, ID:', data.id);
+                                break;
+                            case 'call-offer':
+                                console.log('Received call offer from:', data.from);
+                                if (data.target && data.target.toString() === currentUserId.toString()) {
+                                    // Utiliser un son depuis un CDN
+                                    const ringtone = new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_c8c8a73467.mp3');
+                                    ringtone.loop = true; // Le son se répète jusqu'à la réponse
+                                    
+                                    try {
+                                        await ringtone.play();
+                                        const callerName = "<?= htmlspecialchars($otherParticipant['username']) ?>";
+                                        
+                                        if (confirm(`Appel entrant de ${callerName}. Accepter?`)) {
+                                            ringtone.pause(); // Arrêter la sonnerie si l'appel est accepté
+                                            await callManager.answerCall(data.from, data.offer);
+                                            $('#call-status').removeClass('d-none');
+                                            $('#start-call').addClass('d-none');
+                                        } else {
+                                            ringtone.pause(); // Arrêter la sonnerie si l'appel est refusé
+                                            ws.send(JSON.stringify({
+                                                type: 'call-rejected',
+                                                target: data.from
+                                            }));
+                                        }
+                                    } catch (error) {
+                                        console.error('Error handling call:', error);
+                                    }
+                                }
+                                break;
+                            case 'call-answer':
+                                console.log('Call answered');
+                                await callManager.handleAnswer(data.answer);
+                                break;
+                            case 'call-rejected':
+                                alert('L\'appel a été refusé');
+                                $('#call-status').addClass('d-none');
+                                $('#start-call').removeClass('d-none');
+                                break;
+                            case 'call-error':
+                                alert(data.message);
+                                $('#call-status').addClass('d-none');
+                                $('#start-call').removeClass('d-none');
+                                break;
+                            case 'ice-candidate':
+                                if (callManager && callManager.peerConnection) {
+                                    console.log('ICE candidate received');
+                                    await callManager.addIceCandidate(data.candidate);
+                                }
+                                break;
+                            default:
+                                console.log('Message type:', data.type);
+                        }
+                    } catch (error) {
+                        console.error('Error handling WebSocket message:', error);
+                    }
+                };
+
+                ws.onclose = function() {
+                    console.log('WebSocket Disconnected');
+                    $('#start-call').prop('disabled', true);
+                    callManager = null;
+                    
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(connectWebSocket, reconnectInterval);
+                        reconnectAttempts++;
+                    }
+                };
+
+                return ws;
+            }
+
+            // Initialiser la connexion WebSocket
+            connectWebSocket();
+            
+            // Gestion des appels
+            $('#start-call').click(async function() {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    alert('La connexion au serveur n\'est pas établie. Réessayez dans quelques instants.');
+                    return;
+                }
+                
+                if (!callManager) {
+                    alert('Le gestionnaire d\'appels n\'est pas initialisé. Réessayez dans quelques instants.');
+                    return;
+                }
+                
+                try {
+                    const userId = <?= json_encode($otherParticipant['id']) ?>;
+                    await callManager.startCall(userId);
+                    $('#call-status').removeClass('d-none');
+                    $(this).addClass('d-none');
+                } catch (error) {
+                    console.error('Call error:', error);
+                    alert('Erreur lors du démarrage de l\'appel: ' + error.message);
+                }
+            });
+
+            // Gestionnaire de fin d'appel amélioré
+            $('#end-call').click(function() {
+                if (callManager) {
+                    callManager.endCall();
+                    ws.send(JSON.stringify({
+                        type: 'call-ended',
+                        target: <?= json_encode($otherParticipant['id']) ?>
+                    }));
+                }
+                $('#call-status').addClass('d-none');
+                $('#start-call').removeClass('d-none');
+            });
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>

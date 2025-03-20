@@ -1,126 +1,161 @@
 # Chat Application
 
-Application de chat moderne avec support multilingue et fonctionnalités avancées.
+Application de chat moderne avec architecture MVC et support multilingue.
 
-## Architecture du Projet
+## 📁 Structure du Projet
 
-### 1. Frontend (/chat-app/src/)
-- **Views**: Templates PHP pour le rendu des pages
-- **CSS**: Styles modulaires (style.css, navbar.css, login.css)
-- **JavaScript**: Scripts interactifs (app.js, languageManager.js, profile.js)
-- **Controllers**: Gestion de la logique (AuthController, NavigationController, MessageController)
-- **Models**: Modèles de données (User, Message, Conversation)
+```
+chat-app/
+├── src/
+│   ├── Core/           # Classes noyau (Router, Application, Translator)
+│   ├── Controllers/    # Contrôleurs de l'application
+│   ├── Models/         # Modèles de données
+│   ├── Views/          # Templates et vues
+│   └── translations/   # Fichiers de traduction
+├── public/            # Point d'entrée public
+├── routes/            # Définition des routes
+└── bootstrap/        # Bootstrap de l'application
+```
 
-### 2. Backend
-- Base de données MySQL relationnelle
-- API endpoints sécurisés
-- Gestion des sessions utilisateur
-- Système de sécurité robuste
+## 🚀 Installation
 
-## Fonctionnalités Principales
-
-### 1. Système d'Authentification
-- Login/Register traditionnels
-- Intégration Google Sign-In
-- Gestion des sessions sécurisées
-- Protection contre les attaques courantes
-
-### 2. Messagerie en Temps Réel
-- Support des messages texte
-- Messagerie vocale intégrée
-- Indicateurs de statut utilisateur
-- Avatars dynamiques (API DiceBear)
-- Historique des conversations
-- Notifications en temps réel
-
-### 3. Internationalisation (i18n)
-- Support de multiple langues
-  - Français (FR)
-  - Anglais (EN)
-  - Espagnol (ES)
-  - Chinois (ZH)
-  - Swahili (SW)
-- Changement de langue dynamique sans rechargement
-- Système de traduction extensible
-
-### 4. Interface Utilisateur
-- Design responsive (Bootstrap)
-- Animations et transitions fluides
-- Thème moderne inspiré de WhatsApp/Facebook
-- Mode sombre/clair
-- Interface intuitive
-
-### 5. Fonctionnalités Sociales
-- Profils utilisateurs personnalisables
-- Gestion des contacts et amis
-- Statuts d'activité
-- Partage de médias
-
-## Structure Technique
-
-### Base de Données
-- Tables principales:
-  - users
-  - conversations
-  - messages
-  - conversation_participants
-  - message_status
-  - attachments
-  - user_sessions
-
-### Sécurité
-- Préparation des requêtes SQL
-- Validation des entrées
-- Protection XSS
-- Gestion des sessions sécurisée
-- Encryption des mots de passe
-
-### Performance
-- Mise en cache optimisée
-- Requêtes SQL optimisées
-- Chargement asynchrone
-- Pagination des résultats
-
-## Installation
-
-1. Cloner le repository:
+1. Cloner le projet:
 ```bash
 git clone [url-du-repo]
+cd chat-system/chat-app
 ```
 
-2. Configuration de la base de données:
-```bash
-cd backend
-mysql -u root -p < init.sql
-```
-
-3. Installation des dépendances:
+2. Installer les dépendances:
 ```bash
 composer install
 ```
 
-4. Configuration:
-- Copier `.env.example` vers `.env`
-- Configurer les variables d'environnement
+3. Configurer l'environnement:
+```bash
+cp .env.example .env
+# Modifier les variables dans .env selon votre environnement
+```
 
-## Développement
+4. Initialiser la base de données:
+```bash
+mysql -u root -p < database/init.sql
+```
 
-### Prérequis
-- PHP 7.4+
+## 🏃‍♂️ Démarrage
+
+### Méthode 1: PHP Built-in Server
+```bash
+php server.php
+```
+
+### Méthode 2: Batch Windows
+```bash
+start-server.bat
+```
+
+### Méthode 3: Laragon
+1. Démarrer Laragon
+2. Accéder à http://localhost:8080
+
+## 🔧 Configuration
+
+### Variables d'environnement
+```env
+APP_NAME=ChatApp
+APP_DEBUG=true
+APP_URL=http://localhost:8080
+
+DB_HOST=localhost
+DB_NAME=chat_app
+DB_USER=root
+DB_PASS=
+```
+
+### Routes disponibles
+```php
+/                  # Page d'accueil
+/login            # Connexion
+/register         # Inscription
+/chat            # Interface de chat
+/profile         # Profil utilisateur
+```
+
+## 🌍 Internationalisation
+
+Langues supportées:
+- 🇫🇷 Français (fr)
+- 🇬🇧 English (en)
+- 🇪🇸 Español (es)
+- 🇨🇳 中文 (zh)
+- 🇹🇿 Kiswahili (sw)
+
+## 💬 Fonctionnalités Chat
+
+- Messages texte
+- Messages vocaux
+- Appels vocaux en temps réel (WebRTC)
+- Partage de fichiers
+- Statuts utilisateurs
+- Conversations privées
+- Conversations de groupe
+- Notifications en temps réel
+
+## 🔒 Sécurité
+
+- Protection CSRF
+- Validation des entrées
+- Sessions sécurisées
+- Authentification JWT
+- Encryption des messages
+
+## 🛠 Technologies
+
+- PHP 8.0+
 - MySQL 5.7+
-- Composer
-- Node.js (pour le développement frontend)
+- WebSocket
+- Bootstrap 5
+- JavaScript ES6+
 
-### Technologies Utilisées
-- Backend:
-  - PHP
-  - MySQL
-  - Composer
-- Frontend:
-  - HTML5/CSS3
-  - JavaScript (ES6+)
-  - Bootstrap 5
-  - Font Awesome
+## 📦 API WebSocket & WebRTC
 
-## Licence
-Ce projet est sous licence MIT.
+### WebSocket Connection:
+```javascript
+const ws = new WebSocket('ws://localhost:8090');
+```
+
+### Appels vocaux (WebRTC):
+```javascript
+// Initialiser un appel
+await callManager.startCall(userId);
+
+// Répondre à un appel
+await callManager.answerCall(callId);
+
+// Terminer un appel
+await callManager.endCall();
+```
+
+Configurations WebRTC:
+```javascript
+const rtcConfig = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'turn:your-turn-server.com', 
+      username: 'username',
+      credential: 'password'
+    }
+  ]
+};
+```
+
+## 👥 Contribution
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+MIT License - voir [LICENSE](LICENSE) pour plus de détails.
