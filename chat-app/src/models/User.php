@@ -192,9 +192,19 @@ class User extends BaseModel
 
     public function updateProfile(int $userId, array $data)
     {
-        $sql = "UPDATE users SET name = ?, bio = ?, avatar_url = ? WHERE id = ?";
+        $sql = "UPDATE {$this->table} SET 
+                name = ?, 
+                bio = ?, 
+                status = ? 
+                WHERE id = ?";
+                
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("sssi", $data['name'], $data['bio'], $data['avatar_url'], $userId);
+        $stmt->bind_param("sssi", 
+            $data['name'], 
+            $data['bio'], 
+            $data['status'], 
+            $userId
+        );
         return $stmt->execute();
     }
 

@@ -31,6 +31,20 @@ if (!$currentUser) {
 $conversationModel = new ChatApp\Models\Conversation($db);
 $userConversations = $userModel->getConversations($_SESSION['user_id']);
 
+// Traitement du formulaire de mise à jour
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $updateData = [
+        'name' => $_POST['name'] ?? '',
+        'bio' => $_POST['bio'] ?? '',
+        'status' => $_POST['status'] ?? 'online'
+    ];
+    
+    if ($userModel->updateProfile($_SESSION['user_id'], $updateData)) {
+        $currentUser = $userModel->getById($_SESSION['user_id']);
+        $_SESSION['success_message'] = $translator->translate('Profile updated successfully');
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -270,21 +284,43 @@ $userConversations = $userModel->getConversations($_SESSION['user_id']);
             <div class="col-md-3 fade-in" style="--delay: 0.4s">
                 <div class="profile-section">
                     <h2 class="section-title"><?= $translator->translate('About') ?></h2>
-                    <div class="md-3">
-                        <p class="text-muted"><?= htmlspecialchars($currentUser['bio']) ?></p>
-                    </div>
-                    <div class="mb-3">
-                        <i class="fas fa-briefcase me-2"></i> <?= $translator->translate('Works at') ?> Facebook
-                    </div>
-                    <div class="mb-3">
-                        <i class="fas fa-graduation-cap me-2"></i> <?= $translator->translate('Studied at') ?> MIT
-                    </div>
-                    <div class="mb-3">
-                        <i class="fas fa-home me-2"></i> <?= $translator->translate('Lives in') ?> New York
-                    </div>
-                    <div class="mb-3">
-                        <i class="fas fa-heart me-2"></i> <?= $translator->translate('Single') ?>
-                    </div>
+                    <?php if (isset($_SESSION['success_message'])): ?>
+                        <div class="alert alert-success">
+                            <?= $_SESSION['success_message'] ?>
+                            <?php unset($_SESSION['success_message']); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <form method="POST" action="">
+                        <div class="mb-3">
+                            <label for="name" class="form-label"><?= $translator->translate('Name') ?></label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="<?= htmlspecialchars($currentUser['name'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bio" class="form-label"><?= $translator->translate('Bio') ?></label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3"><?= htmlspecialchars($currentUser['bio'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">
+                                <i class="fas fa-circle me-2"></i><?= $translator->translate('Status') ?>
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="online" <?= ($currentUser['status'] ?? '') === 'online' ? 'selected' : '' ?>>
+                                    <?= $translator->translate('Online') ?>
+                                </option>
+                                <option value="away" <?= ($currentUser['status'] ?? '') === 'away' ? 'selected' : '' ?>>
+                                    <?= $translator->translate('Away') ?>
+                                </option>
+                                <option value="busy" <?= ($currentUser['status'] ?? '') === 'busy' ? 'selected' : '' ?>>
+                                    <?= $translator->translate('Busy') ?>
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <?= $translator->translate('Update Profile') ?>
+                        </button>
+                    </form>
                 </div>
 
                 <div class="profile-section">
