@@ -16,6 +16,10 @@ use Database;
 use Exception;
 
 try {
+    if (!isset($_SESSION['user_id'])) {
+        throw new Exception('Session non valide');
+    }
+
     $db = Database::getInstance()->getConnection();
     
     if (!$db) {
@@ -25,104 +29,74 @@ try {
     
     $messageModel = new Message($db);
 
+    // Correction : Vérification de la méthode POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("Received POST request to MessageController.php");
-        error_log("POST data: " . json_encode($_POST));
-        error_log("FILES data: " . json_encode($_FILES));
+        error_log("POST data: " . print_r($_POST, true));
+        error_log("FILES data: " . print_r($_FILES, true));
 
-        if (isset($_POST['content']) && isset($_POST['conversation_id']) && isset($_POST['message_type'])) {
-            $senderId = $_SESSION['user_id'];
-            $conversationId = $_POST['conversation_id'];
-            $content = $_POST['content'];
-            $messageType = $_POST['message_type'];
-
-            if ($messageType === 'text') {
-                $messageId = $messageModel->create($senderId, $conversationId, $content, $messageType);
-
-                if ($messageId) {
-                    // Redirect to chat page on success
-                    header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&message=Message sent successfully");
-                    exit;
-                } else {
-                    error_log("Failed to create text message in database.");
-                    // Redirect with error message
-                    header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=Failed to send message");
-                    exit;
-                }
-            } elseif ($messageType === 'voice') {
-                if (isset($_FILES['audio'])) {
-                    $audio = $_FILES['audio'];
-
-                    // Validate file upload
-                    if ($audio['error'] === UPLOAD_ERR_OK) {
-                        $tmp_name = $audio["tmp_name"];
-                        $name = basename($audio["name"]);
-
-                        // Ensure a directory for uploads exists
-                        $uploadDir = __DIR__ . '/../uploads/voices/';
-                        if (!is_dir($uploadDir)) {
-                            mkdir($uploadDir, 0777, true);
-                        }
-
-                        $destination = $uploadDir . uniqid() . '_' . $name;
-
-                        if (move_uploaded_file($tmp_name, $destination)) {
-                            $messageId = $messageModel->create($senderId, $conversationId, $destination, $messageType);
-
-                            if ($messageId) {
-                                // Redirect to chat page on success
-                                header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&message=Voice message sent successfully");
-                                exit;
-                            } else {
-                                error_log("Failed to create voice message in database.");
-                                // Redirect with error message
-                                header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=Failed to send voice message");
-                                exit;
-                            }
-                        } else {
-                            http_response_code(500);
-                            error_log("Failed to move uploaded file. Error: " . print_r(error_get_last(), true));
-                            // Redirect with error message
-                            header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=Failed to move uploaded file");
-                            exit;
-                        }
-                    } else {
-                        http_response_code(400);
-                        error_log("File upload error: " . $audio['error']);
-                        // Redirect with error message
-                        header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=File upload error: " . $audio['error']);
-                        exit;
-                    }
-                } else {
-                    http_response_code(400);
-                    error_log("No audio file provided.");
-                    // Redirect with error message
-                    header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=No audio file provided");
-                    exit;
-                }
-            } else {
-                http_response_code(400);
-                error_log("Invalid message type: " . $messageType);
-                // Redirect with error message
-                header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=Invalid message type");
-                exit;
-            }
-        } else {
-            http_response_code(400);
-            error_log("Missing parameters.");
-            // Redirect with error message
-            header("Location: /chat-app/chat.php?conversation_id=" . $conversationId . "&error=Missing parameters");
-            exit;
+        if (empty($_POST['conversation_id'])) {
+            throw new Exception('Missing conversation ID');
         }
+
+        $senderId = $_SESSION['user_id'];
+        $conversationId = $_POST['conversation_id'];
+        $messageType = $_POST['message_type'] ?? 'text';
+        
+        // Gestion des messages texte
+        if ($messageType === 'text' && isset($_POST['content'])) {
+            $content = trim($_POST['content']);
+            if (!empty($content)) {
+                $messageId = $messageModel->create($senderId, $conversationId, $content, $messageType);
+                if ($messageId) {
+                    header("Location: ../conversation.php?conversationId={$conversationId}");
+                    exit;
+                }
+            }
+        }
+        // Gestion des messages vocaux
+        elseif ($messageType === 'voice' && isset($_FILES['audio']) && $_FILES['audio']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $audio = $_FILES['audio'];
+                $baseUploadDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'voices';
+                
+                if (!file_exists($baseUploadDir)) {
+                    if (!mkdir($baseUploadDir, 0777, true)) {
+                        throw new Exception('Impossible de créer le dossier uploads');
+                    }
+                }
+
+                $fileName = uniqid('voice_') . '.webm';
+                $destination = $baseUploadDir . DIRECTORY_SEPARATOR . $fileName;
+
+                if (!move_uploaded_file($audio['tmp_name'], $destination)) {
+                    throw new Exception('Échec du téléchargement du fichier audio');
+                }
+
+                // Chemin relatif pour la base de données
+                $relativePath = 'uploads/voices/' . $fileName;
+                $messageId = $messageModel->create($senderId, $conversationId, $relativePath, $messageType);
+                
+                if (!$messageId) {
+                    throw new Exception('Échec de la création du message');
+                }
+
+                header("Location: ../conversation.php?conversationId={$conversationId}");
+                exit;
+            } catch (Exception $e) {
+                error_log("Erreur audio: " . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        // En cas d'échec silencieux
+        header("Location: ../conversation.php?conversationId={$conversationId}&error=message_failed");
+        exit;
     }
 
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+    error_log("Error in MessageController: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $conversationId = $_POST['conversation_id'] ?? '';
+    header("Location: ../conversation.php?conversationId={$conversationId}&error=" . urlencode($e->getMessage()));
+    exit;
 }

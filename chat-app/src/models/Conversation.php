@@ -24,9 +24,11 @@ class Conversation extends BaseModel
     protected $table = 'conversations';
     protected $primaryKey = 'id';
     public $timestamps = true;
+    protected $conn;  // Ajout de la propriété conn
 
     public function __construct($db) {
         parent::__construct($db, $this->table);
+        $this->conn = $db;  // Stockage de la connexion
     }
 
     /**
@@ -159,5 +161,23 @@ class Conversation extends BaseModel
         $this->addParticipant($conversationId, $user2Id);
         
         return $conversationId;
+    }
+
+    /**
+     * Récupère une conversation par son ID
+     * @param int $id ID de la conversation
+     * @return array|bool Les données de la conversation ou false si non trouvée
+     */
+    public function getById(int $id) {
+        $sql = "SELECT * FROM conversations WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);  // Utilisation de $this->conn au lieu de $this->db
+        $stmt->bind_param("i", $id);
+        
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            return $result->fetch_assoc();
+        }
+        
+        return false;
     }
 }

@@ -8,8 +8,10 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ .'/../backend/config/database.php';
 require_once __DIR__ . '/models/User.php';
 require_once __DIR__ . '/models/Conversation.php';
+require_once __DIR__ . '/models/Message.php';
 require '../../vendor/autoload.php';
 use Carbon\Carbon;
+use ChatApp\Models\Message;
 
 // Récupérer les informations de l'utilisateur
 $db = Database::getInstance()->getConnection();
@@ -133,6 +135,53 @@ if (!$currentUser) {
     $navController = new NavigationController();
     $translator = $navController->getTranslator(); 
     $navController->renderNavbar();
+
+    
+
+    if(isset($_POST['send-message'])){
+        $messageModel = new Message($db);
+        $content = trim($_POST['content']);
+        $conversationId = intval($_POST['conversation_id']);
+        $messageType = trim($_POST['message_type']);
+        $senderId = intval($_SESSION['user_id']);
+        
+        // Validation des données
+        if (empty($content) || $conversationId <= 0 || empty($messageType)) {
+            die("Erreur : Données invalides");
+        }
+
+        // Vérification que l'utilisateur existe
+        $userExists = $userModel->getById($senderId);
+        if (!$userExists) {
+            die("Erreur : Utilisateur non trouvé");
+        }
+
+        // Vérification que la conversation existe
+        $conversationExists = $conversationModel->getById($conversationId);
+        if (!$conversationExists) {
+            die("Erreur : Conversation non trouvée");
+        }
+
+        try {
+            $success = $messageModel->create([
+                'conversation_id' => $conversationId,
+                'sender_id' => $senderId,
+                'content' => $content,
+                'message_type' => $messageType
+            ]);
+
+            if (!$success) {
+                throw new Exception("Échec de l'envoi du message");
+            }
+
+            // Redirection après succès
+            // header("Location: conversation.php?conversationId=" . $conversationId);
+            // exit;
+        } catch (Exception $e) {
+            die("Erreur lors de l'envoi du message : " . $e->getMessage());
+        }
+    }
+
     ?>
 
     <div class="container-fluid py-3">
@@ -228,24 +277,30 @@ if (!$currentUser) {
                             </div>
                         </div>
                         
-                        <form id="message-form" action="chat-app/src/controllers/MessageController.php" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
+                        <form id="message-form"  method="post" enctype="multipart/form-data" class="d-flex align-items-center">
                             <input type="hidden" name="conversation_id" value="<?php echo $_GET['conversationId']; ?>">
                             <input type="hidden" name="message_type" id="message-type" value="text">
-                            <div class="input-group d-flex align-items-center">
-                                <input type="text" id="message-input" name="content"
-                                       class="form-control rounded-pill me-2"
-                                       data-i18n="type_message"
-                                       placeholder="<?= $translator->translate('type_message') ?>"
-                                       style="background-color: #f0f2f0;">
                             
-                                <!-- Bouton Micro/Envoi -->
-                                <button id="record-button" class="btn btn-light rounded-circle me-2" type="button" title="<?= $translator->translate('record_voice') ?>">
-                                    <i class="fas fa-microphone"></i>
-                                </button>
-                                <button id="send-button" class="btn btn-primary rounded-circle" type="submit" title="<?= $translator->translate('send') ?>" style="display:none;">
+                            <div class="input-group d-flex align-items-center">
+                                <input class="form-control"  placeholder="<?= $translator->translate('type_message') ?>"  type="text" name="content">
+                                <button name="send-message"  class="btn btn-primary rounded-circle" type="submit" >
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
-                                <input type="file" id="audio-file" name="audio" style="display: none;">
+                                <!-- <input type="text" id="message-input" name="content"
+                                    class="form-control rounded-pill me-2"
+                                    data-i18n="type_message"
+                                    placeholder="<?= $translator->translate('type_message') ?>"
+                                    style="background-color: #f0f2f0;"
+                                > -->
+                            
+                                <!-- Bouton Micro/Envoi -->
+                                <!-- <button id="record-button" class="btn btn-light rounded-circle me-2" type="button" title="<?= $translator->translate('record_voice') ?>">
+                                    <i class="fas fa-microphone"></i> -->
+                                <!-- </button>
+                                <button name="send-message" id="send-button" class="btn btn-primary rounded-circle" type="submit" style="display:none;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                <input type="file" id="audio-file" name="audio" style="display: none;"> -->
                             </div>
                         </form>
                         

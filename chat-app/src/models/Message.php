@@ -2,7 +2,9 @@
 
 namespace ChatApp\Models;
 
-// require_once __DIR__ . '/BaseModel.php'; // Removed
+require_once __DIR__ . '/BaseModel.php';
+require_once __DIR__ . '/Conversation.php';
+require_once __DIR__ . '/User.php';
 
 /**
  * Modèle de gestion des messages
@@ -10,12 +12,14 @@ namespace ChatApp\Models;
  */
 class Message extends BaseModel {
     protected $table = 'messages';
+    protected $db;
     public $timestamps = false;
 
     public function __construct($db) {
         parent::__construct($db, $this->table);
+        $this->db = $db;
     }
-
+ 
     /**
      * Crée un nouveau message dans la conversation
      * @param int $senderId ID de l'expéditeur
@@ -25,20 +29,30 @@ class Message extends BaseModel {
      * @param string|null $fileUrl URL du fichier si le type n'est pas 'text'
      * @return bool Succès de la création
      */
-    public function create(int $senderId, int $conversationId, string $content, string $messageType = 'text', ?string $fileUrl = null)
-    {
-        $sql = "INSERT INTO {$this->table} (sender_id, conversation_id, content, message_type, file_url) VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iissi", $senderId, $conversationId, $content, $messageType, $fileUrl);
-        $result = $stmt->execute();
-        
-        if ($result) {
-            $messageId = $this->conn->insert_id;
-            $this->createMessageStatus($messageId, $conversationId);
-            return true;
+    public function create($data) {
+        if (!$this->db) {
+            throw new \Exception("La connexion à la base de données n'est pas initialisée");
         }
 
-        return false;
+        $query = "INSERT INTO messages (conversation_id, sender_id, content, message_type, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?, NOW(), NOW())";
+        
+        $stmt = $this->db->prepare($query);
+        if (!$stmt) {
+            throw new \Exception("Erreur de préparation de la requête : " . $this->db->error);
+        }
+
+        $stmt->bind_param("iiss", 
+            $data['conversation_id'],
+            $data['sender_id'],
+            $data['content'],
+            $data['message_type']
+        );
+
+        $success = $stmt->execute();
+        $stmt->close();
+        
+        return $success;
     }
 
     /**
