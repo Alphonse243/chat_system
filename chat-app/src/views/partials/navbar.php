@@ -10,6 +10,16 @@
  * @var string $navData['userAvatar'] URL de l'avatar de l'utilisateur
  * @var string $navData['logoutText'] Texte du bouton de déconnexion
  */
+use ChatApp\Models\User;
+use ChatApp\Models\Message;
+use ChatApp\Models\Conversation;
+// Récupérer les informations de l'utilisateur
+$db = Database::getInstance()->getConnection();
+$userModel = new User($db);
+$messageModel = new Message($db);
+$conversationModel = new Conversation($db);
+$currentUser = $userModel->getById($_SESSION['user_id']);
+$getConversations = $userModel->getConversations($_SESSION['user_id']);
 ?>
 
 <!-- Barre de navigation principale - fixée en haut de la page -->
@@ -31,7 +41,7 @@
         <div class="collapse navbar-collapse navbar-collapse-right" id="navbarNav">
             <!-- Menu principal - Liste des liens de navigation -->
             <ul class="navbar-nav me-auto">
-<!--                 
+                <!--                 
                 <li class="nav-item">
                     <form  method="post">
                         <input name="seach" class="form-control" placeholder="Chercher un utilisateur" type="seach">
@@ -68,6 +78,7 @@
                             <h6 class="mb-0">Messages récents</h6>
                         </div>
                         <div class="chat-messages">
+                            
                             <a href="#" class="dropdown-item p-2 border-bottom">
                                 <div class="d-flex">
                                     <img src="<?= $navData['userAvatar'] ?>" class="rounded-circle me-2" style="width: 40px; height: 40px;">
@@ -81,9 +92,52 @@
                                 </div>
                             </a>
                             <!-- Autres messages... -->
+                            <?php
+                            foreach($getConversations as $item){
+                                // Récupérer l'autre participant de la conversation
+                                $otherParticipant = $conversationModel->getOtherParticipant($item['conversations_id'], $_SESSION['user_id']);
+                                $participantName = $otherParticipant ? htmlspecialchars($otherParticipant['username']) : 'Conversation';
+                                $lastMessage = $conversationModel->getLastMessage($item['conversations_id']);
+                                
+                                // Formater le message selon son type
+                                $messagePreview = '';
+                                if ($lastMessage) {
+                                    switch($lastMessage['message_type']) {
+                                        case 'image':
+                                            $messagePreview = '📷 Photo';
+                                            break;
+                                        case 'file':
+                                            $messagePreview = '📎 Fichier';
+                                            break;
+                                        case 'voice':
+                                            $messagePreview = '🎤 Message vocal';
+                                            break;
+                                        default:
+                                            $messagePreview = htmlspecialchars(substr($lastMessage['content'], 0, 30)) . (strlen($lastMessage['content']) > 30 ? '...' : '');
+                                    }
+                                }
+                                ?>
+
+                                <a href="conversation.php?conversationId=<?= htmlspecialchars($item['conversations_id']) ?>" class="dropdown-item p-2 border-bottom">
+                                    <div class="d-flex">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($participantName) ?>" alt="<?= $participantName ?>" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                                        <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-0"><?= $participantName ?></h6>
+                                                <small class="text-muted">10:00</small>
+                                            </div>
+                                            <p class="mb-0 small text-truncate"><?= $messagePreview ?: 'Aucun message' ?></p>
+                                        </div>
+                                    </div>
+                                </a> 
+                            <?php 
+                            }
+                            ?>
+
                         </div>
                         <div class="p-2 text-center border-top">
-                            <a href="/messages" class="text-decoration-none">Voir tous les messages</a>
+                            <a href="indeX.php" class="text-decoration-none">Voir tous les messages</a>
                         </div>
                     </div>
                 </div>

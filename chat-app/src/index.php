@@ -23,7 +23,7 @@ $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
     
 if (!$currentUser) {
-    session_destroy();
+    session_destroy(); 
     header('Location: login.php');
     exit;
 }
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border: 2px solid white;
         }
         .status-online {
-            background-color: #31a24c;
+            background-color:rgb(0, 138, 32);
         }
         .status-offline {
             background-color: #ccc;

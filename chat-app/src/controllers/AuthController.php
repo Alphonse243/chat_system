@@ -2,59 +2,54 @@
 
 namespace ChatApp\Controllers;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-session_start();
-
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../../backend/config/database.php';
 
 use ChatApp\Models\User;
 use Database;
-use Exception;
 
-header('Content-Type: application/json');
+class AuthController {
+    private $db;
+    private $userModel;
 
-try {
-    $db = Database::getInstance()->getConnection();
-
-    if (!$db) {
-        throw new Exception('Database connection failed');
+    public function __construct() {
+        $this->db = Database::getInstance()->getConnection();
+        $this->userModel = new User($this->db);
     }
 
-    $userModel = new User($db);
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    public function login() {
+        header('Content-Type: application/json');
+        
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
         if (empty($email) || empty($password)) {
-            throw new Exception('Email and password are required');
+            echo json_encode(['success' => false, 'message' => 'Email and password are required']);
+            return;
         }
 
-        $user = $userModel->authenticate($email, $password);
-
-        if ($user) {
+        $user = $this->userModel->findByEmail($email);
+        
+        if ($user && password_verify($password, $user['password'])) {
+            session_start();
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-
+            
             echo json_encode([
                 'success' => true,
-                'redirect' => '/chat-system/chat-app/src/index.php'
+                'redirect' => 'index.php'
             ]);
-            exit;
         } else {
-            throw new Exception('Invalid credentials');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Invalid email or password'
+            ]);
         }
-    } else {
-        throw new Exception('Invalid request method');
     }
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+}
+
+// Handle direct requests to this file
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $authController = new AuthController();
+    $authController->login();
 }

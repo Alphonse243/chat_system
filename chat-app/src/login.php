@@ -70,13 +70,12 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <script src="js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(this);
 
-            fetch('/chat-system/chat-app/src/controllers/AuthController.php', {
+            fetch('controllers/AuthController.php', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -130,27 +129,27 @@ if (isset($_SESSION['user_id'])) {
             });
         });
 
-        function handleCredentialResponse(response) {
-            const formData = new FormData();
-            formData.append('credential', response.credential);
+        // function handleCredentialResponse(response) {
+        //     const formData = new FormData();
+        //     formData.append('credential', response.credential);
 
-            fetch('/chat-system/chat-app/src/controllers/GoogleAuthController.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = data.redirect;
-                } else {
-                    alert('Erreur de connexion: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la connexion');
-            });
-        }
+        //     fetch('controllers/GoogleAuthController.php', {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.success) {
+        //             window.location.href = data.redirect;
+        //         } else {
+        //             alert('Erreur de connexion: ' + data.message);
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Erreur:', error);
+        //         alert('Une erreur est survenue lors de la connexion');
+        //     });
+        // }
     </script>
 </body>
 </html>
