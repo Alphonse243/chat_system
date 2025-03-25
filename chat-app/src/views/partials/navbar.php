@@ -78,19 +78,6 @@ $getConversations = $userModel->getConversations($_SESSION['user_id']);
                             <h6 class="mb-0">Messages récents</h6>
                         </div>
                         <div class="chat-messages">
-                            
-                            <a href="#" class="dropdown-item p-2 border-bottom">
-                                <div class="d-flex">
-                                    <img src="<?= $navData['userAvatar'] ?>" class="rounded-circle me-2" style="width: 40px; height: 40px;">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between">
-                                            <h6 class="mb-0">John Doe</h6>
-                                            <small class="text-muted">10:07</small>
-                                        </div>
-                                        <p class="mb-0 small text-truncate">Il y a plein de nouvelles fonctionnalités cool!</p>
-                                    </div>
-                                </div>
-                            </a>
                             <!-- Autres messages... -->
                             <?php
                             foreach($getConversations as $item){
@@ -115,7 +102,9 @@ $getConversations = $userModel->getConversations($_SESSION['user_id']);
                                         default:
                                             $messagePreview = htmlspecialchars(substr($lastMessage['content'], 0, 30)) . (strlen($lastMessage['content']) > 30 ? '...' : '');
                                     }
+                                   
                                 }
+                                    
                                 ?>
 
                                 <a href="conversation.php?conversationId=<?= htmlspecialchars($item['conversations_id']) ?>" class="dropdown-item p-2 border-bottom">
@@ -125,7 +114,7 @@ $getConversations = $userModel->getConversations($_SESSION['user_id']);
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between">
                                                 <h6 class="mb-0"><?= $participantName ?></h6>
-                                                <small class="text-muted">10:00</small>
+                                                <small class="text-muted">...</small>
                                             </div>
                                             <p class="mb-0 small text-truncate"><?= $messagePreview ?: 'Aucun message' ?></p>
                                         </div>
