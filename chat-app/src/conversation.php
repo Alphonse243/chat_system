@@ -127,6 +127,41 @@ if (!$currentUser) {
         .status-offline {
             background-color: #ccc;
         }
+        .recording-ui {
+            display: none;
+            background: #fff;
+            padding: 10px;
+            border-radius: 20px;
+            align-items: center;
+            width: 100%;
+        }
+        .wave-container {
+            flex-grow: 1;
+            height: 40px;
+            margin: 0 15px;
+            position: relative;
+        }
+        .wave {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(#25d366, #128c7e);
+            opacity: 0.3;
+            animation: wave 1s ease-in-out infinite;
+        }
+        .timer {
+            color: #128c7e;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+        .cancel-record {
+            color: #dc3545;
+            cursor: pointer;
+            margin-right: 15px;
+        }
     </style>
 </head>
 <body>
@@ -138,49 +173,49 @@ if (!$currentUser) {
 
     
 
-    if(isset($_POST['send-message'])){
-        $messageModel = new Message($db);
-        $content = trim($_POST['content']);
-        $conversationId = intval($_POST['conversation_id']);
-        $messageType = trim($_POST['message_type']);
-        $senderId = intval($_SESSION['user_id']);
+    // if(isset($_POST['send-message'])){
+    //     $messageModel = new Message($db);
+    //     $content = trim($_POST['content']);
+    //     $conversationId = intval($_POST['conversation_id']);
+    //     $messageType = trim($_POST['message_type']);
+    //     $senderId = intval($_SESSION['user_id']);
         
-        // Validation des données
-        if (empty($content) || $conversationId <= 0 || empty($messageType)) {
-            die("Erreur : Données invalides");
-        }
+    //     // Validation des données
+    //     if (empty($content) || $conversationId <= 0 || empty($messageType)) {
+    //         die("Erreur : Données invalides");
+    //     }
 
-        // Vérification que l'utilisateur existe
-        $userExists = $userModel->getById($senderId);
-        if (!$userExists) {
-            die("Erreur : Utilisateur non trouvé");
-        }
+    //     // Vérification que l'utilisateur existe
+    //     $userExists = $userModel->getById($senderId);
+    //     if (!$userExists) {
+    //         die("Erreur : Utilisateur non trouvé");
+    //     }
 
-        // Vérification que la conversation existe
-        $conversationExists = $conversationModel->getById($conversationId);
-        if (!$conversationExists) {
-            die("Erreur : Conversation non trouvée");
-        }
+    //     // Vérification que la conversation existe
+    //     $conversationExists = $conversationModel->getById($conversationId);
+    //     if (!$conversationExists) {
+    //         die("Erreur : Conversation non trouvée");
+    //     }
 
-        try {
-            $success = $messageModel->create([
-                'conversation_id' => $conversationId,
-                'sender_id' => $senderId,
-                'content' => $content,
-                'message_type' => $messageType
-            ]);
+    //     try {
+    //         $success = $messageModel->create([
+    //             'conversation_id' => $conversationId,
+    //             'sender_id' => $senderId,
+    //             'content' => $content,
+    //             'message_type' => $messageType
+    //         ]);
 
-            if (!$success) {
-                throw new Exception("Échec de l'envoi du message");
-            }
+    //         if (!$success) {
+    //             throw new Exception("Échec de l'envoi du message");
+    //         }
 
-            // Redirection après succès
-            // header("Location: conversation.php?conversationId=" . $conversationId);
-            // exit;
-        } catch (Exception $e) {
-            die("Erreur lors de l'envoi du message : " . $e->getMessage());
-        }
-    }
+    //         // Redirection après succès
+    //         // header("Location: conversation.php?conversationId=" . $conversationId);
+    //         // exit;
+    //     } catch (Exception $e) {
+    //         die("Erreur lors de l'envoi du message : " . $e->getMessage());
+    //     }
+    // }
 
     ?>
 
@@ -283,7 +318,22 @@ if (!$currentUser) {
                             
                             <div class="input-group d-flex align-items-center">
                                 <input class="form-control" id="message-input" placeholder="<?= $translator->translate('type_message') ?>" type="text" name="content">
+                                <button id="record-button" class="btn btn-light rounded-circle me-2" type="button">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
                                 <button id="send-message" class="btn btn-primary rounded-circle" type="submit">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="recording-ui">
+                                <div class="cancel-record">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div class="wave-container">
+                                    <div class="wave"></div>
+                                </div>
+                                <div class="timer">0:00</div>
+                                <button type="button" class="btn btn-success btn-sm rounded-circle send-voice">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
@@ -577,18 +627,168 @@ if (!$currentUser) {
         });
     </script>
     <script>
+    $(document).ready(function() {
+        // Fonction pour ajouter un message à l'interface
+        function appendMessage(message, username) {
+            const messageHtml = `
+                <div class="message sent">
+                    <div class="d-flex align-items-start">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${username}" 
+                            class="avatar me-2" 
+                            alt="${username}">
+                        <div class="message-content">
+                            <div class="fw-bold text-white mb-1">${username}</div>
+                            <div class="message-text">${message}</div>
+                            <div class="message-time">À l'instant</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#messages').append(messageHtml);
+            $('#messages').scrollTop($('#messages')[0].scrollHeight);
+        }
+
+        // Gestion de l'envoi du message en AJAX
+        $('#message-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const content = $('#message-input').val().trim();
+            if (!content) return;
+
+            const formData = {
+                conversation_id: $('input[name="conversation_id"]').val(),
+                content: content,
+                message_type: $('#message-type').val(),
+                sender_id: <?= json_encode($_SESSION['user_id']) ?>
+            };
+
+            $.ajax({
+                url: 'send_message.php',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        // Ajouter le message à l'interface
+                        appendMessage(content, 'vous');
+                        // Vider le champ de saisie
+                        $('#message-input').val('');
+                    } else {
+                        alert("Erreur lors de l'envoi du message");
+                    }
+                },
+                error: function() {
+                    alert("Erreur lors de l'envoi du message");
+                }
+            });
+        });
+    });
+</script>
+<script>
 $(document).ready(function() {
-    // Fonction pour ajouter un message à l'interface
-    function appendMessage(message, username) {
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let timerInterval;
+    let startTime;
+    
+    function updateTimer() {
+        const now = Date.now();
+        const diff = now - startTime;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        $('.timer').text(`${minutes}:${remainingSeconds.toString().padStart(2, '0')}`);
+    }
+
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.start();
+                
+                isRecording = true;
+                $('.input-group').hide();
+                $('.recording-ui').css('display', 'flex');
+                
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert("Erreur d'accès au microphone");
+            });
+    }
+
+    function stopRecording() {
+        return new Promise(resolve => {
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                resolve(audioBlob);
+            };
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        });
+    }
+
+    $('#record-button').on('mousedown touchstart', function(e) {
+        e.preventDefault();
+        startRecording();
+    });
+
+    $('.cancel-record').click(function() {
+        if (isRecording) {
+            stopRecording().then(() => {
+                isRecording = false;
+                $('.recording-ui').hide();
+                $('.input-group').show();
+            });
+        }
+    });
+
+    $('.send-voice').click(function() {
+        if (isRecording) {
+            stopRecording().then(audioBlob => {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice.webm');
+                formData.append('conversation_id', $('input[name="conversation_id"]').val());
+                formData.append('message_type', 'voice');
+                
+                $.ajax({
+                    url: 'send_message.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            appendVoiceMessage(response.audioUrl);
+                        }
+                        isRecording = false;
+                        $('.recording-ui').hide();
+                        $('.input-group').show();
+                    }
+                });
+            });
+        }
+    });
+
+    function appendVoiceMessage(audioUrl) {
         const messageHtml = `
             <div class="message sent">
                 <div class="d-flex align-items-start">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${username}" 
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=vous" 
                          class="avatar me-2" 
-                         alt="${username}">
+                         alt="vous">
                     <div class="message-content">
-                        <div class="fw-bold text-white mb-1">${username}</div>
-                        <div class="message-text">${message} 😊</div>
+                        <div class="fw-bold text-white mb-1">vous</div>
+                        <audio controls class="w-100">
+                            <source src="${audioUrl}" type="audio/webm">
+                            Votre navigateur ne supporte pas l'élément audio.
+                        </audio>
                         <div class="message-time">À l'instant</div>
                     </div>
                 </div>
@@ -597,40 +797,6 @@ $(document).ready(function() {
         $('#messages').append(messageHtml);
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
     }
-
-    // Gestion de l'envoi du message en AJAX
-    $('#message-form').on('submit', function(e) {
-        e.preventDefault();
-        
-        const content = $('#message-input').val().trim();
-        if (!content) return;
-
-        const formData = {
-            conversation_id: $('input[name="conversation_id"]').val(),
-            content: content,
-            message_type: $('#message-type').val(),
-            sender_id: <?= json_encode($_SESSION['user_id']) ?>
-        };
-
-        $.ajax({
-            url: 'send_message.php',
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    // Ajouter le message à l'interface
-                    appendMessage(content, 'vous');
-                    // Vider le champ de saisie
-                    $('#message-input').val('');
-                } else {
-                    alert("Erreur lors de l'envoi du message");
-                }
-            },
-            error: function() {
-                alert("Erreur lors de l'envoi du message");
-            }
-        });
-    });
 });
 </script>
 </body>
