@@ -277,30 +277,15 @@ if (!$currentUser) {
                             </div>
                         </div>
                         
-                        <form id="message-form"  method="post" enctype="multipart/form-data" class="d-flex align-items-center">
+                        <form id="message-form" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
                             <input type="hidden" name="conversation_id" value="<?php echo $_GET['conversationId']; ?>">
                             <input type="hidden" name="message_type" id="message-type" value="text">
                             
                             <div class="input-group d-flex align-items-center">
-                                <input class="form-control"  placeholder="<?= $translator->translate('type_message') ?>"  type="text" name="content">
-                                <button name="send-message"  class="btn btn-primary rounded-circle" type="submit" >
+                                <input class="form-control" id="message-input" placeholder="<?= $translator->translate('type_message') ?>" type="text" name="content">
+                                <button id="send-message" class="btn btn-primary rounded-circle" type="submit">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
-                                <!-- <input type="text" id="message-input" name="content"
-                                    class="form-control rounded-pill me-2"
-                                    data-i18n="type_message"
-                                    placeholder="<?= $translator->translate('type_message') ?>"
-                                    style="background-color: #f0f2f0;"
-                                > -->
-                            
-                                <!-- Bouton Micro/Envoi -->
-                                <!-- <button id="record-button" class="btn btn-light rounded-circle me-2" type="button" title="<?= $translator->translate('record_voice') ?>">
-                                    <i class="fas fa-microphone"></i> -->
-                                <!-- </button>
-                                <button name="send-message" id="send-button" class="btn btn-primary rounded-circle" type="submit" style="display:none;">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                                <input type="file" id="audio-file" name="audio" style="display: none;"> -->
                             </div>
                         </form>
                         
@@ -591,5 +576,62 @@ if (!$currentUser) {
             }
         });
     </script>
+    <script>
+$(document).ready(function() {
+    // Fonction pour ajouter un message à l'interface
+    function appendMessage(message, username) {
+        const messageHtml = `
+            <div class="message sent">
+                <div class="d-flex align-items-start">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${username}" 
+                         class="avatar me-2" 
+                         alt="${username}">
+                    <div class="message-content">
+                        <div class="fw-bold text-white mb-1">${username}</div>
+                        <div class="message-text">${message} 😊</div>
+                        <div class="message-time">À l'instant</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#messages').append(messageHtml);
+        $('#messages').scrollTop($('#messages')[0].scrollHeight);
+    }
+
+    // Gestion de l'envoi du message en AJAX
+    $('#message-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const content = $('#message-input').val().trim();
+        if (!content) return;
+
+        const formData = {
+            conversation_id: $('input[name="conversation_id"]').val(),
+            content: content,
+            message_type: $('#message-type').val(),
+            sender_id: <?= json_encode($_SESSION['user_id']) ?>
+        };
+
+        $.ajax({
+            url: 'send_message.php',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Ajouter le message à l'interface
+                    appendMessage(content, 'vous');
+                    // Vider le champ de saisie
+                    $('#message-input').val('');
+                } else {
+                    alert("Erreur lors de l'envoi du message");
+                }
+            },
+            error: function() {
+                alert("Erreur lors de l'envoi du message");
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>
