@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h1 class="card-title">Facebook</h1>
+                        <h1 class="card-title">Chat</h1>
                     </div>
                     <div class="card-body">
                         <h2>Create an account</h2>

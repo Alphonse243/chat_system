@@ -56,6 +56,31 @@ class Message extends BaseModel {
     }
 
     /**
+     * Supprime un message
+     * @param int $messageId ID du message
+     * @param int $userId ID de l'utilisateur qui supprime
+     * @return bool Succès de la suppression
+     */
+    public function delete($messageId, $userId) {
+        if (!$this->db) {
+            throw new \Exception("La connexion à la base de données n'est pas initialisée");
+        }
+
+        $query = "DELETE FROM messages WHERE id = ? AND sender_id = ?";
+        $stmt = $this->db->prepare($query);
+        
+        if (!$stmt) {
+            throw new \Exception("Erreur de préparation de la requête : " . $this->db->error);
+        }
+
+        $stmt->bind_param("ii", $messageId, $userId);
+        $success = $stmt->execute();
+        $stmt->close();
+        
+        return $success;
+    }
+
+    /**
      * Crée les statuts initiaux pour un nouveau message
      * @param int $messageId ID du message
      * @param int $conversationId ID de la conversation
@@ -145,5 +170,32 @@ class Message extends BaseModel {
         }
         
         return [];
+    }
+
+    /**
+     * Récupère les informations d'un message par son ID
+     * @param int $messageId ID du message
+     * @return array|null Informations du message ou null si non trouvé
+     */
+    public function getById($messageId) {
+        if (!$this->db) {
+            throw new \Exception("La connexion à la base de données n'est pas initialisée");
+        }
+
+        $query = "SELECT * FROM messages WHERE id = ?";
+        $stmt = $this->db->prepare($query);
+        
+        if (!$stmt) {
+            throw new \Exception("Erreur de préparation de la requête");
+        }
+
+        $stmt->bind_param("i", $messageId);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $message = $result->fetch_assoc();
+        
+        $stmt->close();
+        return $message;
     }
 }

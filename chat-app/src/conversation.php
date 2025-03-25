@@ -162,6 +162,80 @@ if (!$currentUser) {
             cursor: pointer;
             margin-right: 15px;
         }
+        .record-button-active {
+            background-color: #128c7e !important;
+            color: white !important;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+        .record-hint {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+        .message-actions {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 5px;
+        }
+        .message:hover .message-actions {
+            display: block;
+        }
+        .delete-message {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 3px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+        }
+        .voice-controls {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1000;
+        }
+
+        .slide-to-cancel {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .recording-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -271,8 +345,13 @@ if (!$currentUser) {
                                     Carbon::setlocale('fr');
                                     $FormattedDate = $messageCreatedAt->translatedFormat('L d F Y') ;
                                 ?> 
-                                    <div class="message <?= $positionMessage ?> ">
-                                        <div class="d-flex align-items-start">
+                                    <div class="message <?= $positionMessage ?> " data-message-id="<?= $item['id'] ?>">
+                                        <div class="d-flex align-items-start position-relative">
+                                            <?php if($item['sender_id'] == $_SESSION['user_id']): ?>
+                                                <div class="message-actions">
+                                                    <i class="fas fa-trash-alt delete-message"></i>
+                                                </div>
+                                            <?php endif; ?>
                                             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($name) ?>" 
                                                 class="avatar me-2" 
                                                 alt="<?= htmlspecialchars($name) ?>">
@@ -347,6 +426,14 @@ if (!$currentUser) {
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="voice-controls">
+        <div class="recording-status">
+            <div class="pulse"></div>
+            <span class="record-time">0:00</span>
+        </div>
+        <div class="slide-to-cancel">← Glisser pour annuler</div>
     </div>
 
     <!-- Scripts -->
@@ -688,17 +775,47 @@ $(document).ready(function() {
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
-    let timerInterval;
-    let startTime;
+    let startX, moveX;
+    let recordingStartTime;
+    let recordingTimer;
     
-    function updateTimer() {
-        const now = Date.now();
-        const diff = now - startTime;
-        const seconds = Math.floor(diff / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        $('.timer').text(`${minutes}:${remainingSeconds.toString().padStart(2, '0')}`);
+    function updateRecordingTime() {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        $('.record-time').text(`${minutes}:${seconds.toString().padStart(2, '0')}`);
     }
+
+    $('#record-button').on('touchstart mousedown', function(e) {
+        e.preventDefault();
+        startX = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX;
+        
+        // Démarrer l'enregistrement après un court délai
+        setTimeout(() => {
+            startRecording();
+        }, 200);
+    });
+
+    $(document).on('touchmove mousemove', function(e) {
+        if (!isRecording) return;
+        
+        moveX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
+        const diff = moveX - startX;
+        
+        // Si l'utilisateur glisse vers la gauche de plus de 100px, annuler l'enregistrement
+        if (diff < -100) {
+            cancelRecording();
+        }
+    });
+
+    $(document).on('touchend mouseup', function() {
+        if (!isRecording) return;
+        
+        // Si on n'a pas annulé par glissement, finaliser l'enregistrement
+        if (moveX - startX > -100) {
+            finishRecording();
+        }
+    });
 
     function startRecording() {
         navigator.mediaDevices.getUserMedia({ audio: true })
@@ -710,93 +827,89 @@ $(document).ready(function() {
                 mediaRecorder.start();
                 
                 isRecording = true;
-                $('.input-group').hide();
-                $('.recording-ui').css('display', 'flex');
+                recordingStartTime = Date.now();
+                recordingTimer = setInterval(updateRecordingTime, 1000);
                 
-                startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
+                $('.voice-controls').fadeIn();
+                $('#record-button').addClass('recording');
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                alert("Erreur d'accès au microphone");
+                $('.record-hint').text('Microphone non disponible').fadeIn().delay(2000).fadeOut();
             });
     }
 
-    function stopRecording() {
-        return new Promise(resolve => {
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                resolve(audioBlob);
-            };
-            mediaRecorder.stop();
-            clearInterval(timerInterval);
+    function cancelRecording() {
+        if (!isRecording) return;
+        
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        clearInterval(recordingTimer);
+        
+        isRecording = false;
+        $('.voice-controls').fadeOut();
+        $('#record-button').removeClass('recording');
+    }
+
+    function finishRecording() {
+        if (!isRecording || audioChunks.length === 0) return;
+        
+        mediaRecorder.stop();
+        clearInterval(recordingTimer);
+        
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            sendVoiceMessage(audioBlob);
+            
             mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        };
+        
+        isRecording = false;
+        $('.voice-controls').fadeOut();
+        $('#record-button').removeClass('recording');
+    }
+
+    function sendVoiceMessage(audioBlob) {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'voice.webm');
+        formData.append('conversation_id', $('input[name="conversation_id"]').val());
+        formData.append('message_type', 'voice');
+        
+        $.ajax({
+            url: 'send_message.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    appendVoiceMessage(response.audioUrl);
+                }
+            }
         });
     }
-
-    $('#record-button').on('mousedown touchstart', function(e) {
-        e.preventDefault();
-        startRecording();
+});
+</script>
+<script>
+$(document).ready(function() {
+    // Gestion de la suppression des messages
+    $(document).on('click', '.delete-message', function() {
+        const messageElement = $(this).closest('.message');
+        const messageId = messageElement.data('message-id');
+        
+        $.ajax({
+            url: 'delete_message.php',
+            type: 'POST',
+            data: { message_id: messageId },
+            success: function(response) {
+                if(response.success) {
+                    messageElement.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }
+            }
+        });
     });
-
-    $('.cancel-record').click(function() {
-        if (isRecording) {
-            stopRecording().then(() => {
-                isRecording = false;
-                $('.recording-ui').hide();
-                $('.input-group').show();
-            });
-        }
-    });
-
-    $('.send-voice').click(function() {
-        if (isRecording) {
-            stopRecording().then(audioBlob => {
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'voice.webm');
-                formData.append('conversation_id', $('input[name="conversation_id"]').val());
-                formData.append('message_type', 'voice');
-                
-                $.ajax({
-                    url: 'send_message.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.success) {
-                            appendVoiceMessage(response.audioUrl);
-                        }
-                        isRecording = false;
-                        $('.recording-ui').hide();
-                        $('.input-group').show();
-                    }
-                });
-            });
-        }
-    });
-
-    function appendVoiceMessage(audioUrl) {
-        const messageHtml = `
-            <div class="message sent">
-                <div class="d-flex align-items-start">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=vous" 
-                         class="avatar me-2" 
-                         alt="vous">
-                    <div class="message-content">
-                        <div class="fw-bold text-white mb-1">vous</div>
-                        <audio controls class="w-100">
-                            <source src="${audioUrl}" type="audio/webm">
-                            Votre navigateur ne supporte pas l'élément audio.
-                        </audio>
-                        <div class="message-time">À l'instant</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        $('#messages').append(messageHtml);
-        $('#messages').scrollTop($('#messages')[0].scrollHeight);
-    }
 });
 </script>
 </body>
