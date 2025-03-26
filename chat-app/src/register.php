@@ -143,7 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <h1 class="card-title">Chat</h1>
                     </div>
                     <div class="card-body">
-                        <h2>Create an account</h2>
+                        <h2>enregistrement</h2> 
+            
                         <?php if ($error): ?>
                             <div class="alert alert-danger"><?= $error ?></div>
                         <?php endif; ?>
