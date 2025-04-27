@@ -5,6 +5,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$page = 'home';
+$ContenuPageTitle = '';
 require_once __DIR__ .'/../backend/config/database.php';
 require_once __DIR__ . '/models/User.php';
 require_once __DIR__ . '/models/Message.php';
@@ -21,6 +23,11 @@ $messageModel = new Message($db);
 $conversationModel = new Conversation($db);
 $currentUser = $userModel->getById($_SESSION['user_id']);
 $getConversations = $userModel->getConversations($_SESSION['user_id']);
+
+// Navigation
+require_once __DIR__ . '/controllers/NavigationController.php';
+$navController = new NavigationController();
+$translator = $navController->getTranslator(); 
     
 if (!$currentUser) {
     session_destroy(); 
@@ -42,56 +49,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: conversation.php?conversationId=" . $conversationId);
     exit();
 }
+
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Chat Application</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .avatar-container {
-            position: relative;
-            display: inline-block;
-        }
-        .status-indicator {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        .status-online {
-            background-color:rgb(0, 138, 32);
-        }
-        .status-offline {
-            background-color: #ccc;
-        }
-    </style>
-</head>
+
+<?php include 'views/partials/head.php' ?>
+
+<style>
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+    }
+    .status-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+    .status-online {
+        background-color:rgb(0, 138, 32);
+    }
+    .status-offline {
+        background-color: #ccc;
+    }
+</style>
+
 <body style="background-color: #f0f2f5;">
     <?php
-    require_once __DIR__ . '/controllers/NavigationController.php';
-    $navController = new NavigationController();
-    $translator = $navController->getTranslator(); 
-    $navController->renderNavbar();
+        
+        $navController->renderNavbar();
+        include 'views/partials/downbar.php'
     ?>
 
     <div class="container-fluid py-3">
         <div class="row g-3">
             <!-- Users Online Section -->
-            <div class="col-md-3">
+            <div class="col-md-3  ">
                 <div class="card rounded-3 border-0">
-                    <div class="card-header bg-white border-0">
+                    <div class="card-header bg-white border-0 fade-in">
                         <h5 class="mb-0 text-primary fw-bold" data-i18n="conversation"><?= $translator->translate('Conversations') ?></h5>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="current-user mb-3 p-3 border-bottom ">
+                    <div class="card-body p-0 ">
+                        <div class="current-user mb-3 p-3 border-bottom fade-in ">
                             
                                 <div class="d-flex align-items-center">
                                     <a href="profile.php">
@@ -107,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                
                             
                         </div>
-                        <ul id="online-users" class="list-group list-group-flush current-user mb-3 p-3 border-bottom">
+                        <ul id="online-users" class=" fade-in list-group list-group-flush current-user mb-3 p-3 border-bottom">
                             <!-- La liste des conversation privée sera générée dynamiquement -->
                             <?php
                                 foreach($getConversations as $item){
@@ -201,18 +206,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script type="module" src="js/languageManager.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-2.2.4.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const elements = document.querySelectorAll('.fade-in');
-            if (elements && elements.length > 0) {
-                elements.forEach(element => {
-                    if (element) {
-                        const delay = element.style.getPropertyValue('--delay') || '0s';
-                        element.style.animationDelay = delay;
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>

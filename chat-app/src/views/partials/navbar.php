@@ -149,17 +149,42 @@ $getConversations = $userModel->getConversations($_SESSION['user_id']);
                         <?php endforeach; ?>
                     </ul>
                 </div>
-                
+                 
                 <!-- Avatar de l'utilisateur -->
-                <img src="<?= $navData['userAvatar'] ?>" 
+                <a href="profile.php">
+                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($currentUser['username']) ?>" 
                      class="rounded-circle me-2" 
-                     style="width: 32px; height: 32px;"
+                     style="width: 32px; height: 32px;" 
                      alt="Avatar utilisateur">
+                </a>
                 
                 <!-- Bouton de déconnexion -->
                 <a href="logout.php" class="btn btn-outline-danger btn-sm" data-i18n="logout">
                     <?= $navData['logoutText'] ?>
                 </a>
+                <!-- PLus tard ajax pour changer statut apres deconnexion -->
+                <script>
+                    // $(document).ready(function() {
+                    //     // Gestion de la suppression des messages
+                    //     $(document).on('click', '.delete-message', function() {
+                    //         const messageElement = $(this).closest('.message');
+                    //         const messageId = messageElement.data('message-id');
+                            
+                    //         $.ajax({
+                    //             url: 'delete_message.php',
+                    //             type: 'POST',
+                    //             data: { message_id: messageId },
+                    //             success: function(response) {
+                    //                 if(response.success) {
+                    //                     messageElement.fadeOut(300, function() {
+                    //                         $(this).remove();
+                    //                     });
+                    //                 }
+                    //             }
+                    //         });
+                    //     });
+                    // });
+                </script>
             </div>
         </div>
     </div>

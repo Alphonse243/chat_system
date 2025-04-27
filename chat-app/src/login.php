@@ -6,7 +6,7 @@ require_once __DIR__ . '/controllers/NavigationController.php';
 $navController = new NavigationController();
 $translator = $navController->getTranslator();
 
-if (isset($_SESSION['user_id'])) {
+if(isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }

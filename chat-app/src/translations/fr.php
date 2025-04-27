@@ -9,5 +9,5 @@ return [
     'contacts' => 'Contacts',
     'message_placeholder' => 'Écrivez votre message...',
     'online_users' => 'Utilisateurs en ligne',
-    'type_message' => 'Aa'
+    'type_message' => 'Ecrire le message'
 ];

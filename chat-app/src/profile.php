@@ -13,7 +13,6 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
-
 require_once __DIR__ .'/../backend/config/database.php';
 
 // Récupérer les informations de l'utilisateur
@@ -45,16 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$page = 'profile';
+$ContenuPageTitle = htmlspecialchars($currentUser['username']);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Modern Chat Application</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <?php include 'views/partials/head.php' ?>
+
     <style>
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -239,6 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body style="background-color: #f0f2f5;">
     <?php
     $navController->renderNavbar();
+    include 'views/partials/downbar.php'
     ?>
 
     <div class="container-fluid px-4">
@@ -331,15 +331,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $otherParticipant = $conversationModel->getOtherParticipant($conv['conversations_id'], $_SESSION['user_id']);
                             if($otherParticipant):
                         ?>
-                        <div class="friend-item">
-                            <a href="conversation.php?conversationId=<?= htmlspecialchars($conv['conversations_id']) ?>" 
-                               class="text-decoration-none">
+                        <div class="friend-item ">
+                            <a href="view_profile.php?user_id=<?= htmlspecialchars($otherParticipant['id']) ?>" 
+                               class="text-decoration-none  ">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
                                      alt="<?= htmlspecialchars($otherParticipant['username']) ?>"
                                      title="<?= htmlspecialchars($otherParticipant['username']) ?>">
                                 <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
-                                <div class="text-center mt-2 text-dark">
-                                    <?= htmlspecialchars($otherParticipant['username']) ?>
+                                <div class="text-center mt-2 text-dark ">
+                                    <h6><?= htmlspecialchars($otherParticipant['username']) ?></h6>
+                                    <a class="text-decoration-none btn btn-primary" href="conversation.php?conversationId=<?= htmlspecialchars($conv['conversations_id']) ?>">Message</a>
                                 </div>
                             </a>
                         </div>
@@ -374,18 +375,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/languageManager.js"></script>
     <script src="js/profile.js"></script>
-    <script> // Revert removal of DOMContentLoaded listener
-        document.addEventListener('DOMContentLoaded', function() {
-            const elements = document.querySelectorAll('.fade-in');
-            if (elements && elements.length > 0) {
-                elements.forEach(element => {
-                    if (element) {
-                        const delay = element.style.getPropertyValue('--delay') || '0s';
-                        element.style.animationDelay = delay;
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

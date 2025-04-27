@@ -57,11 +57,6 @@ class NavigationController {
                     'label' => $this->translator->translate('settings'),
                     'url' => 'settings.php',
                     'active' => false
-                ],
-                [
-                    'label' => $this->translator->translate('conversation'),
-                    'url' => 'conversation.php',
-                    'active' => false
                 ]
             ],
             // Informations de l'utilisateur connecté

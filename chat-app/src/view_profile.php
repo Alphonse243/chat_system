@@ -100,7 +100,10 @@ $userConversations = $userModel->getConversations($viewedUser['id']);
     </style>
 </head>
 <body style="background-color: #f0f2f5;">
-    <?php $navController->renderNavbar(); ?>
+    <?php
+        $navController->renderNavbar();
+        include 'views/partials/downbar.php'
+    ?>
 
     <div class="container-fluid px-4">
         <!-- Profile Card -->
@@ -140,7 +143,7 @@ $userConversations = $userModel->getConversations($viewedUser['id']);
 
         <div class="row">
             <!-- About & Friends Section -->
-            <div class="col-md-3">
+            <div class="col-md-3 ">
                 <div class="profile-section">
                     <h2 class="section-title"><?= $translator->translate('About') ?></h2>
                     <div class="mb-3">
@@ -162,14 +165,18 @@ $userConversations = $userModel->getConversations($viewedUser['id']);
                             $otherParticipant = $conversationModel->getOtherParticipant($conv['conversations_id'], $viewedUser['id']);
                             if($otherParticipant):
                         ?>
-                        <div class="friend-item">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
-                                 alt="<?= htmlspecialchars($otherParticipant['username']) ?>"
-                                 title="<?= htmlspecialchars($otherParticipant['username']) ?>">
-                            <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
-                            <div class="text-center mt-2">
-                                <?= htmlspecialchars($otherParticipant['username']) ?>
-                            </div>
+                        <div class="friend-item ">
+                            <a href="view_profile.php?user_id=<?= htmlspecialchars($otherParticipant['id']) ?>" 
+                               class="text-decoration-none  ">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($otherParticipant['username']) ?>" 
+                                     alt="<?= htmlspecialchars($otherParticipant['username']) ?>"
+                                     title="<?= htmlspecialchars($otherParticipant['username']) ?>">
+                                <span class="status-indicator <?= $otherParticipant['status'] === 'online' ? 'status-online' : 'status-offline' ?>"></span>
+                                <div class="text-center mt-2 text-dark ">
+                                    <h6><?= htmlspecialchars($otherParticipant['username']) ?></h6>
+                                    <a class="text-decoration-none btn btn-primary" href="conversation.php?conversationId=<?= htmlspecialchars($conv['conversations_id']) ?>">Message</a>
+                                </div>
+                            </a>
                         </div>
                         <?php 
                             endif;

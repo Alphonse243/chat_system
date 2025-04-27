@@ -5,6 +5,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const sendButton = document.getElementById('send-button');
     const messagesContainer = document.getElementById('messages');
     const typingIndicator = document.getElementById('typing-indicator');
+    
+    // Revert removal of DOMContentLoaded listener
+    const elements = document.querySelectorAll('.fade-in');
+    if (elements && elements.length > 0) {
+        elements.forEach(element => {
+            if (element) {
+                const delay = element.style.getPropertyValue('--delay') || '0s';
+                element.style.animationDelay = delay;
+            }
+        });
+    }
 
     if (sendButton && messageInput && messagesContainer && typingIndicator) {
         sendButton.addEventListener('click', sendMessage);
